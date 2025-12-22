@@ -1,6 +1,7 @@
 # Automated Plant Disease Detection Using Deep Learning and Transfer Learning
 
-This project detects plant leaf diseases using a Deep Learning CNN model trained on the PlantVillage Dataset. It supports common crops such as Apple, Grape, Corn, Tomato, Potato, etc. A ResNet50 Transfer Learning Model is trained and fine-tuned for high accuracy, and then deployed for real-time image prediction with Grad-CAM heatmap
+This project detects plant leaf diseases using a Deep Learning CNN model trained on the PlantVillage Dataset and provides **LLM-powered, context-aware plant health recommendations** via **Hugging Face API integration**. It supports common crops such as Apple, Grape, Corn, Tomato, Potato and others as well. A ResNet50 Transfer Learning model is trained andfine-tuned for high accuracy, deployed as a real-time Streamlit application with Grad-CAM explainability and automated AI-driven care advice.
+
 
 **Link**: https://automated-plant-disease-detection.streamlit.app/
 
@@ -23,7 +24,7 @@ This project uses **deep learning + transfer learning (ResNet50)** to classify *
 - Leaf image upload & preprocessing  
 - Automatic disease prediction  
 - Grad-CAM region highlighting  
-- AI care recommendations (Hugging Face LLM)  
+- AI care recommendations via Hugging Face **LLM API integration**  
 - Stylish Streamlit UI  
 - Cloud deployment ready  
 
@@ -125,6 +126,62 @@ outputs = Dense(38, activation='softmax')(x)
 - Excellent generalization — no major gap between Train & Test
 - Strong class separation confirmed by Grad-CAM and confusion matrix
 - Real-time performance achieved even without GPU
+
+### LLM-Based Recommendation System (API Integration)
+
+After disease classification, the system generates actionable plant care and prevention recommendations using a Large Language Model.
+
+- Integrated **Mistral-7B-Instruct-v0.2** via **Hugging Face Inference API**
+  using secure API tokens.
+- The predicted disease class, crop type, and severity context are
+  dynamically injected into structured prompts.
+- The LLM generates:
+  - Disease-specific treatment suggestions
+  - Preventive best practices
+  - General plant health improvement tips
+- Responses are post-processed to ensure concise, safe, and
+  domain-relevant recommendations suitable for end users.
+- This LLM module is fully integrated into the real-time Streamlit
+  inference pipeline, executing after CNN prediction.
+
+```python
+from huggingface_hub import InferenceClient
+import os
+
+client = InferenceClient(
+    provider="featherless-ai",
+    api_key=os.getenv("HUGGINGFACE_TOKEN")
+)
+
+prompt = f"""
+You are an expert plant pathologist.
+The detected condition is: {readable_prediction}.
+Provide detailed treatment and preventive care advice.
+"""
+
+completion = client.chat.completions.create(
+    model="mistralai/Mistral-7B-Instruct-v0.2",
+    messages=[
+        {"role": "system", "content": "You are a professional plant health expert."},
+        {"role": "user", "content": prompt}
+    ],
+    temperature=0.7,
+)
+
+response = completion.choices[0].message["content"]
+```
+### Why Use an LLM?
+
+Traditional rule-based mappings are insufficient for handling variations in crop types, disease severity, and treatment practices.
+The LLM enables:
+- Flexible, context-aware recommendations
+- Scalable support for new diseases without retraining rules
+- Human-like, actionable guidance for end users
+
+**Inference Flow:**
+Leaf Image → CNN Prediction → Disease Class →
+LLM Prompt Construction → LLM API Call →
+Recommendation Generation → User Display
 
 ## Live Application
 
