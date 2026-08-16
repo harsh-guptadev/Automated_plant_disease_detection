@@ -4,12 +4,10 @@ voice_utils.py
 Voice input (Speech-to-Text) and voice output (Text-to-Speech) utilities
 for the AgriVision AI chatbot.
 
-Speech-to-Text  : Uses streamlit-mic-recorder to capture microphone audio
-                  in the browser, then transcribes via Google Speech API
-                  (free, no key required, requires internet).
-
-Text-to-Speech  : Uses gTTS (Google Text-to-Speech) to convert the assistant
-                  response to MP3 audio and streams it in an HTML player.
+Key fix: Each recording from mic_recorder has a unique `id`. We track the
+last-processed ID in st.session_state so that on every Streamlit rerun the
+same recording is NOT re-submitted — this allows follow-up questions to work
+normally via both text typing and repeated voice recordings.
 """
 
 import io
@@ -43,9 +41,10 @@ GTTS_LANG_MAP = {
 def render_voice_input(language: str = "English") -> str | None:
     """
     Renders a microphone recorder widget.
-    When the user finishes recording, the audio is transcribed using
-    Google's free Speech-to-Text API and the text is returned.
-    Returns None if no audio has been recorded yet.
+
+    Returns the transcribed text ONLY for a brand-new recording (identified
+    by its unique `id`). On subsequent reruns the same recording is ignored,
+    so normal text follow-up questions work without interference.
     """
     try:
         from streamlit_mic_recorder import mic_recorder  # type: ignore
@@ -65,7 +64,7 @@ def render_voice_input(language: str = "English") -> str | None:
     audio = mic_recorder(
         start_prompt="🎤  Start Speaking",
         stop_prompt="⏹  Stop & Transcribe",
-        just_once=True,        # auto-clears after one recording so it doesn't loop
+        just_once=False,          # We handle deduplication ourselves via audio id
         use_container_width=True,
         key="agrivision_mic",
     )
@@ -73,11 +72,20 @@ def render_voice_input(language: str = "English") -> str | None:
     if audio is None:
         return None
 
-    audio_bytes: bytes = audio["bytes"]
+    # ── Deduplicate: only process each new recording once ──────────────────
+    audio_id = audio.get("id", -1)
+    if st.session_state.get("_last_mic_id") == audio_id:
+        # This is the same recording we already processed — skip it so
+        # the user can type a follow-up question without it being overridden.
+        return None
+    st.session_state["_last_mic_id"] = audio_id
+    # ───────────────────────────────────────────────────────────────────────
+
+    audio_bytes: bytes = audio.get("bytes", b"")
     if not audio_bytes:
         return None
 
-    # Transcribe — convert WebM/Opus → WAV first (browser records in WebM)
+    # Transcribe — convert WebM/Opus → WAV first (browser records WebM)
     try:
         import speech_recognition as sr  # type: ignore
         from pydub import AudioSegment   # type: ignore
@@ -87,28 +95,29 @@ def render_voice_input(language: str = "English") -> str | None:
 
     recognizer = sr.Recognizer()
 
-    try:
-        # Browser MediaRecorder produces WebM/Opus; pydub+ffmpeg converts it to WAV
-        webm_buffer = io.BytesIO(audio_bytes)
-        audio_segment = AudioSegment.from_file(webm_buffer)   # auto-detects format via ffmpeg
-        wav_buffer = io.BytesIO()
-        audio_segment.export(wav_buffer, format="wav")
-        wav_buffer.seek(0)
+    with st.spinner("🔄 Transcribing your voice..."):
+        try:
+            webm_buffer  = io.BytesIO(audio_bytes)
+            audio_seg    = AudioSegment.from_file(webm_buffer)   # ffmpeg auto-detects format
+            wav_buffer   = io.BytesIO()
+            audio_seg.export(wav_buffer, format="wav")
+            wav_buffer.seek(0)
 
-        with sr.AudioFile(wav_buffer) as source:
-            audio_data = recognizer.record(source)
-        transcript = recognizer.recognize_google(audio_data, language=lang_code)
-        st.success(f"🗣️ Heard: **{transcript}**")
-        return transcript
-    except sr.UnknownValueError:
-        st.warning("Could not understand the audio. Please try again — speak clearly and avoid background noise.")
-        return None
-    except sr.RequestError as e:
-        st.error(f"Speech recognition service error: {e}. Check your internet connection.")
-        return None
-    except Exception as e:
-        st.error(f"Transcription error: {e}")
-        return None
+            with sr.AudioFile(wav_buffer) as source:
+                audio_data = recognizer.record(source)
+            transcript = recognizer.recognize_google(audio_data, language=lang_code)
+            st.success(f"🗣️ Heard: **{transcript}**")
+            return transcript
+
+        except sr.UnknownValueError:
+            st.warning("Could not understand the audio — please speak clearly and try again.")
+            return None
+        except sr.RequestError as e:
+            st.error(f"Speech recognition service error: {e}")
+            return None
+        except Exception as e:
+            st.error(f"Transcription error: {e}")
+            return None
 
 
 # ---------------------------------------------------------------------------
@@ -127,7 +136,7 @@ def speak_response(text: str, language: str = "English") -> None:
 
     lang_code = GTTS_LANG_MAP.get(language, "en")
 
-    # Strip markdown for cleaner TTS audio
+    # Strip markdown symbols for cleaner TTS audio
     clean = re.sub(r"[*_`#>\[\]()~|]+", "", text)
     clean = re.sub(r"\n{2,}", ". ", clean).strip()
     if not clean:
