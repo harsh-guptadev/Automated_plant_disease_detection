@@ -9,13 +9,19 @@ from tensorflow.keras.layers import Input
 import cv2
 from tensorflow.keras.preprocessing import image
 import os
+import sys
 from dotenv import load_dotenv
+
+# Path setup for modular packages
+sys.path.append("src")
 
 # Import custom RAG & Agritech modules
 from rag_engine import retrieve_disease_context, generate_rag_care_advice, chat_with_agronomist_rag
 from severity_estimator import estimate_disease_severity
 from pdf_generator import create_pdf_report
 from voice_utils import render_voice_input, speak_response
+from evaluation.batch_processor import process_batch_images
+from models.efficientnet_benchmark import benchmark_single_image, get_model_specs
 
 # Page setup
 st.set_page_config(
@@ -224,40 +230,103 @@ model = load_model()
 
 # Image Upload Card
 st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-upload_file = st.file_uploader("📷 Select or drop a plant leaf image for instant diagnosis", type=['png', 'jpg', 'jpeg'])
+upload_files = st.file_uploader(
+    "📷 Select or drop plant leaf image(s) for instant single or batch field-level diagnosis",
+    type=['png', 'jpg', 'jpeg'],
+    accept_multiple_files=True
+)
 st.markdown('</div>', unsafe_allow_html=True)
 
-if upload_file is not None:
+# Helper function for Grad-CAM Heatmap calculation
+def make_gradcam_heatmap(img_array, model, last_conv_layer_name='conv5_block3_out'):
+    last_conv_layer = model.get_layer(last_conv_layer_name)
+    grad_model = tf.keras.models.Model([model.inputs], [last_conv_layer.output, model.output])
+    with tf.GradientTape() as tape:
+        conv_outputs, predictions = grad_model(img_array)
+        class_idx = tf.argmax(predictions[0])
+        loss = predictions[:, class_idx]
+    grads = tape.gradient(loss, conv_outputs)
+    pooled_grads = tf.reduce_mean(grads, axis=(0, 1, 2))
+    conv_outputs = conv_outputs[0]
+    heatmap = tf.reduce_sum(tf.multiply(pooled_grads, conv_outputs), axis=-1)
+    heatmap = np.maximum(heatmap, 0) / (np.max(heatmap) + 1e-8)
+    return heatmap
+
+if upload_files and len(upload_files) > 1:
+    # ──────────────────────────────────────────────────────────────────────────
+    # BATCH / MULTI-IMAGE FIELD DIAGNOSTIC DASHBOARD
+    # ──────────────────────────────────────────────────────────────────────────
+    st.markdown("### 🌾 Batch Field Diagnostic Dashboard")
+    st.caption("Field-level crop health analytics generated across multiple leaf inspection samples.")
+
+    with st.spinner("Processing batch field diagnostic samples..."):
+        summary_stats, results_list, df_export = process_batch_images(
+            upload_files, model, classes, class_descriptions, estimate_disease_severity, make_gradcam_heatmap
+        )
+
+    # Metric summary row
+    c1, c2, c3, c4 = st.columns(4)
+    with c1:
+        st.markdown(f'''
+            <div class="glass-card">
+                <div class="metric-label">Total Leaves Scanned</div>
+                <div class="metric-value">{summary_stats["total_scanned"]}</div>
+            </div>
+        ''', unsafe_allow_html=True)
+    with c2:
+        st.markdown(f'''
+            <div class="glass-card">
+                <div class="metric-label">Healthy Leaves</div>
+                <div class="metric-value" style="color:#34d399;">{summary_stats["healthy_count"]}</div>
+            </div>
+        ''', unsafe_allow_html=True)
+    with c3:
+        st.markdown(f'''
+            <div class="glass-card">
+                <div class="metric-label">Infected Leaves</div>
+                <div class="metric-value" style="color:#f87171;">{summary_stats["infected_count"]}</div>
+            </div>
+        ''', unsafe_allow_html=True)
+    with c4:
+        st.markdown(f'''
+            <div class="glass-card">
+                <div class="metric-label">Field Health Score</div>
+                <div class="metric-value" style="color:#6ee7b7;">{summary_stats["field_health_score"]}%</div>
+            </div>
+        ''', unsafe_allow_html=True)
+
+    st.markdown("#### 📋 Field Inspection Log")
+    st.dataframe(df_export, use_container_width=True)
+
+    # CSV Download Button
+    csv_bytes = df_export.to_csv(index=False).encode('utf-8')
+    st.download_button(
+        label="📥 Download Field Inspection Log (CSV)",
+        data=csv_bytes,
+        file_name="Field_Inspection_Log.csv",
+        mime="text/csv"
+    )
+
+elif upload_files and len(upload_files) == 1:
+    # ──────────────────────────────────────────────────────────────────────────
+    # SINGLE LEAF DIAGNOSTIC & BENCHMARKING DASHBOARD
+    # ──────────────────────────────────────────────────────────────────────────
+    upload_file = upload_files[0]
     image = Image.open(upload_file).convert("RGB")
     
     image_resized = image.resize((224, 224))
     image_array = np.array(image_resized)
     image_batch = np.expand_dims(image_array, axis=0)
-    image_batch = preprocess_input(image_batch)
+    image_batch_preprocessed = preprocess_input(image_batch.copy())
     
-    predictions = model.predict(image_batch)
-    confidence = np.max(predictions)
+    predictions = model.predict(image_batch_preprocessed)
+    confidence = float(np.max(predictions))
     predicted_class = classes[np.argmax(predictions)]
     readable_prediction = class_descriptions.get(predicted_class, predicted_class)
     is_healthy = "healthy" in readable_prediction.lower()
 
-    # Grad-CAM Heatmap calculation
-    def make_gradcam_heatmap(img_array, model, last_conv_layer_name='conv5_block3_out'):
-        last_conv_layer = model.get_layer(last_conv_layer_name)
-        grad_model = tf.keras.models.Model([model.inputs], [last_conv_layer.output, model.output])
-        with tf.GradientTape() as tape:
-            conv_outputs, predictions = grad_model(img_array)
-            class_idx = tf.argmax(predictions[0])
-            loss = predictions[:, class_idx]
-        grads = tape.gradient(loss, conv_outputs)
-        pooled_grads = tf.reduce_mean(grads, axis=(0, 1, 2))
-        conv_outputs = conv_outputs[0]
-        heatmap = tf.reduce_sum(tf.multiply(pooled_grads, conv_outputs), axis=-1)
-        heatmap = np.maximum(heatmap, 0) / (np.max(heatmap) + 1e-8)
-        return heatmap
-
-    heatmap = make_gradcam_heatmap(image_batch, model)
-    severity_metrics = estimate_disease_severity(heatmap)
+    heatmap = make_gradcam_heatmap(image_batch_preprocessed, model)
+    severity_metrics = estimate_disease_severity(heatmap, confidence=confidence)
     
     img_cv = np.array(image)
     img_cv = cv2.cvtColor(img_cv, cv2.COLOR_RGB2BGR)
@@ -306,11 +375,12 @@ if upload_file is not None:
     rag_data = retrieve_disease_context(predicted_class)
 
     # Multi-Tab Application Blueprint
-    tab1, tab2, tab3, tab4 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
         "🔍 Visual & Grad-CAM Analysis",
         "📚 Knowledge-Grounded Protocol",
         "💬 Knowledge-Grounded Agri-Assistant",
-        "📄 PDF Decision-Support Report"
+        "📄 PDF Decision-Support Report",
+        "📊 Model Comparison (Viva Defense)"
     ])
 
     with tab1:
@@ -422,3 +492,54 @@ if upload_file is not None:
                     file_name=f"Plant_Health_Report_{predicted_class}.pdf",
                     mime="application/pdf"
                 )
+
+    with tab5:
+        st.markdown("### 📊 Model Architecture Comparison & Benchmarking")
+        st.caption("Academic research benchmarking comparing ResNet50 baseline against EfficientNetV2-B0.")
+        
+        specs = get_model_specs()
+        
+        col_m1, col_m2 = st.columns(2)
+        with col_m1:
+            st.markdown(f'''
+                <div class="glass-card">
+                    <h4 style="color:#6ee7b7; margin-top:0;">ResNet50 Baseline</h4>
+                    <p><b>Parameters:</b> {specs["ResNet50"]["params_formatted"]}</p>
+                    <p><b>Model Size:</b> {specs["ResNet50"]["model_size_mb"]} MB</p>
+                    <p><b>Scaling:</b> {specs["ResNet50"]["scaling_type"]}</p>
+                </div>
+            ''', unsafe_allow_html=True)
+        with col_m2:
+            st.markdown(f'''
+                <div class="glass-card">
+                    <h4 style="color:#34d399; margin-top:0;">EfficientNetV2-B0 Benchmark</h4>
+                    <p><b>Parameters:</b> {specs["EfficientNetV2-B0"]["params_formatted"]} <i>(~77% parameter reduction)</i></p>
+                    <p><b>Model Size:</b> {specs["EfficientNetV2-B0"]["model_size_mb"]} MB</p>
+                    <p><b>Scaling:</b> {specs["EfficientNetV2-B0"]["scaling_type"]}</p>
+                </div>
+            ''', unsafe_allow_html=True)
+
+        st.divider()
+        if st.button("⚡ Run Live Side-by-Side Inference Benchmarking"):
+            with st.spinner("Running side-by-side ResNet50 vs EfficientNetV2 inference..."):
+                bench_res = benchmark_single_image(image_array, model, len(classes))
+                
+                b1, b2 = st.columns(2)
+                with b1:
+                    st.markdown(f"**ResNet50 Latency:** `{bench_res['ResNet50']['latency_ms']} ms`")
+                    st.markdown(f"**ResNet50 Top-1 Confidence:** `{bench_res['ResNet50']['confidence']*100:.1f}%`")
+                with b2:
+                    st.markdown(f"**EfficientNetV2-B0 Latency:** `{bench_res['EfficientNetV2-B0']['latency_ms']} ms`")
+                    st.markdown(f"**EfficientNetV2-B0 Top-1 Confidence:** `{bench_res['EfficientNetV2-B0']['confidence']*100:.1f}%`")
+
+                st.markdown("#### 🏆 Top-3 Probability Breakdown")
+                t3_res = bench_res['ResNet50']['top3_indices']
+                t3_probs_res = bench_res['ResNet50']['top3_probs']
+                
+                chart_data = {
+                    classes[idx].replace("___", " - "): round(prob * 100, 1)
+                    for idx, prob in zip(t3_res, t3_probs_res)
+                }
+                st.bar_chart(chart_data)
+
+        st.info("💡 **Viva Defense Insight:** EfficientNetV2 utilizes compound scaling (jointly balancing depth, width, and resolution) along with Fused-MBConv layers, achieving higher parameter efficiency and lower memory footprint compared to traditional fixed-depth ResNet architectures.")
