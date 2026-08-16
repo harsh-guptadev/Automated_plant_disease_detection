@@ -1,0 +1,230 @@
+{
+  "Apple___Apple_scab": {
+    "symptoms": "Olive-green to black velvet-like spots on leaves and fruit, causing leaf drop.",
+    "chemical_treatment": "Apply Captan 50 WP (2g per liter water) or Myclobutanil early in the season.",
+    "organic_remedy": "Neem oil spray (5ml/L) or copper octanoate fungicide every 7 to 10 days.",
+    "prevention": "Rake and destroy fallen leaves in autumn; prune trees to ensure proper sunlight & air circulation."
+  },
+  "Apple___Black_rot": {
+    "symptoms": "Frog-eye spots on leaves, black rot on fruit, and reddish-brown stem cankers.",
+    "chemical_treatment": "Spray Captan or Thiophanate-methyl starting at pink bud stage through harvest.",
+    "organic_remedy": "Liquid copper fungicide spray combined with sulfur applications.",
+    "prevention": "Prune out dead wood and cankers; remove mummified fruits from trees and ground."
+  },
+  "Apple___Cedar_apple_rust": {
+    "symptoms": "Bright orange-yellow spots on upper leaf surfaces; tube-like spore structures beneath.",
+    "chemical_treatment": "Apply Immunox or Myclobutanil fungicide from green tip stage until petal fall.",
+    "organic_remedy": "Sulfur-based fungicide sprays applied before rain events.",
+    "prevention": "Remove nearby eastern red cedar trees or galls within a 500-meter radius."
+  },
+  "Apple___healthy": {
+    "symptoms": "Leaves are vibrant green, firm, and free of blemishes or fungal growth.",
+    "chemical_treatment": "No chemical treatment required.",
+    "organic_remedy": "Maintain regular organic compost application and balanced soil hydration.",
+    "prevention": "Ensure annual pruning, proper spacing, and routine monitoring."
+  },
+  "Blueberry___healthy": {
+    "symptoms": "Lush green foliage with no discoloration or wilting.",
+    "chemical_treatment": "None needed.",
+    "organic_remedy": "Maintain acidic soil pH (4.5–5.5) using pine bark mulch and organic sulfur.",
+    "prevention": "Ensure good drainage and drip irrigation to avoid leaf wetness."
+  },
+  "Cherry_(including_sour)___Powdery_mildew": {
+    "symptoms": "White powdery fungal growth covering young leaves, terminals, and stems.",
+    "chemical_treatment": "Apply Myclobutanil or Potassium Bicarbonate spray upon first sign.",
+    "organic_remedy": "Baking soda solution (1 tbsp baking soda + 1 tsp liquid soap per gallon of water).",
+    "prevention": "Prune dense canopy to increase sunlight penetration and air movement."
+  },
+  "Cherry_(including_sour)___healthy": {
+    "symptoms": "Clean, smooth leaf tissue with healthy venation.",
+    "chemical_treatment": "None required.",
+    "organic_remedy": "Apply organic mulch layer around base.",
+    "prevention": "Regular water management and fall sanitation."
+  },
+  "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot": {
+    "symptoms": "Rectangular, tan to grayish leaf lesions bounded by leaf veins.",
+    "chemical_treatment": "Apply Strobilurin or Triazole fungicides (e.g., Pyraclostrobin or Azoxystrobin).",
+    "organic_remedy": "Copper hydroxide spray applied at early tassel stage.",
+    "prevention": "Rotate crops with non-host plants (soybeans/alfalfa) and use resistant hybrid seeds."
+  },
+  "Corn_(maize)___Common_rust_": {
+    "symptoms": "Oval to elongate powdery brick-red pustules on both upper and lower leaf surfaces.",
+    "chemical_treatment": "Fungicides containing Mancozeb or Propiconazole if infection exceeds 5% threshold.",
+    "organic_remedy": "Sulfur dusting or neem seed kernel extract (5%).",
+    "prevention": "Plant resistant corn varieties and avoid late planting."
+  },
+  "Corn_(maize)___Northern_Leaf_Blight": {
+    "symptoms": "Large elliptical grayish-green or tan lesions (2–15 cm long) on leaves.",
+    "chemical_treatment": "Foliar application of Azoxystrobin + Propiconazole at tasseling.",
+    "organic_remedy": "Bacillus subtilis biopesticide sprays.",
+    "prevention": "Incorporate crop residues deeply into soil after harvest and practice 2-year crop rotation."
+  },
+  "Corn_(maize)___healthy": {
+    "symptoms": "Robust deep green leaves with strong stalk development.",
+    "chemical_treatment": "None required.",
+    "organic_remedy": "Balanced nitrogen enrichment via cover crops.",
+    "prevention": "Maintain proper plant population density and weed control."
+  },
+  "Grape___Black_rot": {
+    "symptoms": "Small reddish-brown leaf spots; berries shrivel into hard black mummies.",
+    "chemical_treatment": "Apply Mancozeb, Captan, or Ziram from bud break until 4 weeks after bloom.",
+    "organic_remedy": "Copper soap fungicide applied weekly during high humidity.",
+    "prevention": "Destroy mummified grapes and prune infected canes during winter dormant season."
+  },
+  "Grape___Esca_(Black_Measles)": {
+    "symptoms": "Tiger-stripe leaf discoloration (yellow/red between veins) and dark spots on berries.",
+    "chemical_treatment": "No direct cure; apply wound sealants (Tebuconazole) after pruning cuts.",
+    "organic_remedy": "Trichoderma-based biocontrol agents applied to fresh pruning wounds.",
+    "prevention": "Avoid pruning in wet weather; remove severely infected vines to prevent spread."
+  },
+  "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)": {
+    "symptoms": "Irregular dark brown leaf spots with dark fungal tufts underneath.",
+    "chemical_treatment": "Foliar spray of Copper Oxychloride (3g/L) or Carbendazim (1g/L).",
+    "organic_remedy": "Bordeaux mixture (1%) sprayed fortnightly.",
+    "prevention": "Ensure good canopy ventilation and collect/burn fallen leaves."
+  },
+  "Grape___healthy": {
+    "symptoms": "Vibrant green leaves and firm fruit clusters without blemishes.",
+    "chemical_treatment": "None required.",
+    "organic_remedy": "Organic compost tea soil drench.",
+    "prevention": "Routine training of grapevines on trellises for airflow."
+  },
+  "Orange___Haunglongbing_(Citrus_greening)": {
+    "symptoms": "Asymmetrical blotchy mottle on leaves, yellow shoots, small misshapen bitter fruit.",
+    "chemical_treatment": "Control Asian Citrus Psyllid vector using Imidacloprid or Thiamethoxam.",
+    "organic_remedy": "Horticultural mineral oils and insecticidal soaps to reduce vector population.",
+    "prevention": "Use certified disease-free nursery trees; immediately remove infected trees."
+  },
+  "Peach___Bacterial_spot": {
+    "symptoms": "Small dark water-soaked spots on leaves turning into shot-holes; pitted fruit.",
+    "chemical_treatment": "Apply Oxytetracycline or Copper hydroxide during dormant and bloom stages.",
+    "organic_remedy": "Copper soap spray applied before leaf emergence.",
+    "prevention": "Avoid overhead irrigation and plant windbreaks to minimize leaf abrasion."
+  },
+  "Peach___healthy": {
+    "symptoms": "Smooth green foliage and undamaged bark.",
+    "chemical_treatment": "None required.",
+    "organic_remedy": "Mulch root zone with organic wood chips.",
+    "prevention": "Regular pruning and orchard hygiene."
+  },
+  "Pepper,_bell___Bacterial_spot": {
+    "symptoms": "Small, dark, water-soaked leaf spots that turn brown and scab-like.",
+    "chemical_treatment": "Apply Copper Hydroxide mixed with Mancozeb for improved bacterial control.",
+    "organic_remedy": "Copper octanoate spray or Streptomyces lydicus bio-fungicide.",
+    "prevention": "Use disease-free seed; practice 3-year rotation away from solanaceous crops."
+  },
+  "Pepper,_bell___healthy": {
+    "symptoms": "Deep green glossy leaves without spots.",
+    "chemical_treatment": "None required.",
+    "organic_remedy": "Apply well-aged manure or worm castings.",
+    "prevention": "Maintain drip irrigation and crop spacing."
+  },
+  "Potato___Early_blight": {
+    "symptoms": "Concentric ring ('target board') brown spots on older lower leaves.",
+    "chemical_treatment": "Foliar spray of Chlorothalonil, Mancozeb, or Difenoconazole every 7–14 days.",
+    "organic_remedy": "Copper fungicide or Bacillus subtilis application at early onset.",
+    "prevention": "Maintain adequate plant nutrition (especially Nitrogen) and destroy infected haulms."
+  },
+  "Potato___Late_blight": {
+    "symptoms": "Water-soaked dark lesions on leaf tips/edges with white mold on underside in high humidity.",
+    "chemical_treatment": "Systemic fungicides like Metalaxyl, Dimethomorph, or Cymoxanil.",
+    "organic_remedy": "Bordeaux mixture (1%) or Copper Sulfate applied preventatively before rain.",
+    "prevention": "Plant certified seed tubers; destroy volunteer potato plants and hill up soil."
+  },
+  "Potato___healthy": {
+    "symptoms": "Lush foliage with clear green leaflets.",
+    "chemical_treatment": "None required.",
+    "organic_remedy": "Organic seaweed extract spray for immunity boost.",
+    "prevention": "Keep soil well-drained and maintain proper crop rotation."
+  },
+  "Raspberry___healthy": {
+    "symptoms": "Healthy dark green compound leaves.",
+    "chemical_treatment": "None required.",
+    "organic_remedy": "Compost mulch around cane bases.",
+    "prevention": "Prune spent fruiting canes immediately after harvest."
+  },
+  "Soybean___healthy": {
+    "symptoms": "Uniform green trifoliate leaves.",
+    "chemical_treatment": "None required.",
+    "organic_remedy": "Inoculate soil with beneficial Rhizobium bacteria.",
+    "prevention": "Maintain optimal row spacing for canopy closure."
+  },
+  "Squash___Powdery_mildew": {
+    "symptoms": "Talcut-like white powder covering leaf surfaces, leading to yellowing and premature leaf death.",
+    "chemical_treatment": "Apply Myclobutanil, Triadimefon, or Sulfur spray upon symptom appearance.",
+    "organic_remedy": "Potassium bicarbonate spray (3g/L) or diluted milk spray (1:9 ratio with water).",
+    "prevention": "Plant resistant cultivars; irrigate at soil level to keep foliage dry."
+  },
+  "Strawberry___Leaf_scorch": {
+    "symptoms": "Purplish spots on upper leaf surfaces that enlarge and dry into brown 'scorched' tissue.",
+    "chemical_treatment": "Apply Captan or Syngenta Switch (Cyprodinil + Fludioxonil).",
+    "organic_remedy": "Copper soap or sulfur fungicide sprayed every 10 days.",
+    "prevention": "Renovate strawberry beds after harvest; clean up old leaves."
+  },
+  "Strawberry___healthy": {
+    "symptoms": "Vibrant trifoliate green leaves with clear margins.",
+    "chemical_treatment": "None required.",
+    "organic_remedy": "Pine needle mulch to keep fruit clean.",
+    "prevention": "Maintain proper plant spacing and drip irrigation."
+  },
+  "Tomato___Bacterial_spot": {
+    "symptoms": "Small brown water-soaked leaf spots with yellow halos; leaves drop prematurely.",
+    "chemical_treatment": "Apply Copper Hydroxide combined with Mancozeb every 7–10 days.",
+    "organic_remedy": "Copper octanoate or Serenade (Bacillus subtilis) foliar spray.",
+    "prevention": "Avoid overhead watering; disinfect tools and stakes between seasons."
+  },
+  "Tomato___Early_blight": {
+    "symptoms": "Dark brown spots with characteristic concentric target rings on lower leaves first.",
+    "chemical_treatment": "Spray Chlorothalonil, Mancozeb, or Azoxystrobin at first sign.",
+    "organic_remedy": "Copper fungicide or bio-fungicide containing Trichoderma harzianum.",
+    "prevention": "Mulch soil surface around stem base; prune lower leaves touching soil."
+  },
+  "Tomato___Late_blight": {
+    "symptoms": "Large pale green to dark water-soaked spots with white fungal fuzzy growth underneath.",
+    "chemical_treatment": "Systemic application of Metalaxyl-M or Chlorothalonil every 5–7 days in wet weather.",
+    "organic_remedy": "Bordeaux mixture spray applied preventatively.",
+    "prevention": "Ensure high airflow; avoid planting near potatoes; destroy infected plants immediately."
+  },
+  "Tomato___Leaf_Mold": {
+    "symptoms": "Pale green/yellow spots on upper leaf surface with velvety olive-green mold underneath.",
+    "chemical_treatment": "Apply Difenoconazole or Chlorothalonil spray upon first symptoms.",
+    "organic_remedy": "Copper fungicide or neem oil (0.5%) sprays.",
+    "prevention": "Improve greenhouse ventilation; keep relative humidity below 85%."
+  },
+  "Tomato___Septoria_leaf_spot": {
+    "symptoms": "Numerous small circular spots with dark margins and light gray centers containing black specks.",
+    "chemical_treatment": "Foliar application of Chlorothalonil or Mancozeb.",
+    "organic_remedy": "Liquid copper fungicide spray applied weekly.",
+    "prevention": "Stake plants off ground; practice 3-year crop rotation."
+  },
+  "Tomato___Spider_mites Two-spotted_spider_mite": {
+    "symptoms": "Yellow stippling/speckling on leaves with fine silken webbing on leaf undersides.",
+    "chemical_treatment": "Apply Abamectin, Spiromesifen, or Bifenazate acaricide.",
+    "organic_remedy": "Insecticidal soap, Neem oil (1%), or release predatory mites (Phytoseiulus persimilis).",
+    "prevention": "Avoid water stress; spray leaf undersides with water streams to disrupt webs."
+  },
+  "Tomato___Target_Spot": {
+    "symptoms": "Target-like brown necrotic spots with light tan centers on leaves and fruits.",
+    "chemical_treatment": "Spray Azoxystrobin, Chlorothalonil, or Pyraclostrobin.",
+    "organic_remedy": "Copper soap or Bacillus amyloliquefaciens biocontrol.",
+    "prevention": "Remove crop debris after harvest; maintain optimal plant nutrition."
+  },
+  "Tomato___Tomato_Yellow_Leaf_Curl_Virus": {
+    "symptoms": "Severe leaf curling upward, yellowing leaf margins, stunted growth, flower drop.",
+    "chemical_treatment": "No chemical cure for virus; control Whitefly vector using Acetamiprid or Imidacloprid.",
+    "organic_remedy": "Yellow sticky traps and neem oil spray to reduce whitefly vectors.",
+    "prevention": "Use insect-proof netting; plant TYLCV-resistant tomato cultivars."
+  },
+  "Tomato___Tomato_mosaic_virus": {
+    "symptoms": "Mottled dark green/light green mosaic pattern on leaves; fern-like leaf distortion.",
+    "chemical_treatment": "No chemical treatment available for viral infection.",
+    "organic_remedy": "Wash hands/tools in milk or 20% trisodium phosphate solution to stop contact spread.",
+    "prevention": "Use virus-free certified seeds; prohibit tobacco use near tomato plants."
+  },
+  "Tomato___healthy": {
+    "symptoms": "Deep green compound leaves with upright growth and vigorous stems.",
+    "chemical_treatment": "None required.",
+    "organic_remedy": "Apply balanced compost and compost tea.",
+    "prevention": "Stake plants, water at soil line, and prune suckers appropriately."
+  }
+}
