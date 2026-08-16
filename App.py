@@ -15,6 +15,7 @@ from dotenv import load_dotenv
 from rag_engine import retrieve_disease_context, generate_rag_care_advice, chat_with_agronomist_rag
 from severity_estimator import estimate_disease_severity
 from pdf_generator import create_pdf_report
+from voice_utils import render_voice_input_component, speak_response
 
 # Page setup
 st.set_page_config(
@@ -351,21 +352,38 @@ if upload_file is not None:
 
     with tab3:
         st.markdown("### 💬 Knowledge-Grounded Agri-Assistant")
-        st.caption("Ask follow-up questions about disease management, chemical safety, or organic alternatives.")
-        
+        st.caption("Ask follow-up questions about disease management, chemical safety, or organic alternatives — by **typing** or **speaking**.")
+
+        # Voice output toggle
+        enable_voice_out = st.toggle("🔊 Read AI responses aloud", value=False, help="Automatically plays TTS audio for each AI reply.")
+
         if "chat_history" not in st.session_state:
             st.session_state.chat_history = []
+        if "voice_pending" not in st.session_state:
+            st.session_state.voice_pending = None
 
+        # ── Chat history display ──────────────────────────────────────────────
         for msg in st.session_state.chat_history:
             with st.chat_message(msg["role"]):
                 st.write(msg["content"])
 
-        user_input = st.chat_input(f"Ask AgriVision AI about {readable_prediction}...")
+        # ── Voice input widget ────────────────────────────────────────────────
+        st.markdown("**🎤 Voice Input** — click the microphone, speak, then press Send:")
+        voice_transcript = render_voice_input_component(language=language, height=120)
+
+        # ── Text input ────────────────────────────────────────────────────────
+        user_input = st.chat_input(f"Or type your question about {readable_prediction}...")
+
+        # Prefer voice transcript if it arrived this rerun
+        if voice_transcript and isinstance(voice_transcript, str) and voice_transcript.strip():
+            user_input = voice_transcript.strip()
+
+        # ── Process question ─────────────────────────────────────────────────
         if user_input:
             st.session_state.chat_history.append({"role": "user", "content": user_input})
             with st.chat_message("user"):
                 st.write(user_input)
-                
+
             load_dotenv()
             HF_TOKEN = st.session_state.get("HF_TOKEN") or os.getenv("HF_TOKEN") or os.getenv("HUGGINGFACE_TOKEN")
             if HF_TOKEN:
@@ -377,6 +395,10 @@ if upload_file is not None:
                             )
                             st.write(bot_response)
                             st.session_state.chat_history.append({"role": "assistant", "content": bot_response})
+
+                            # ── Voice output ──────────────────────────────
+                            if enable_voice_out:
+                                speak_response(bot_response, language=language)
                         except Exception as e:
                             st.error(f"API Error: {e}")
             else:
