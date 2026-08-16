@@ -1,215 +1,145 @@
-# Automated Plant Disease Detection Using Deep Learning and Transfer Learning
+# Reliable & Explainable Plant Disease Diagnosis & Management System (AgriVision AI)
 
-This project detects plant leaf diseases using a Deep Learning CNN model trained on the PlantVillage Dataset and provides **LLM-powered, context-aware plant health recommendations** via **Hugging Face API integration**. It supports common crops such as Apple, Grape, Corn, Tomato, Potato and others as well. A ResNet50 Transfer Learning model is trained andfine-tuned for high accuracy, deployed as a real-time Streamlit application with Grad-CAM explainability and automated AI-driven care advice.
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://automated-plant-disease-detection.streamlit.app/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-
-**Link**: https://automated-plant-disease-detection.streamlit.app/
+An explainable, uncertainty-aware, and Retrieval-Augmented Generation (RAG) decision-support system for automated plant disease identification and evidence-grounded crop care recommendations.
 
 ---
 
-## Problem Statement
-Plant diseases cause serious yield losses worldwide. Traditional disease detection is:
+## 🔬 Research Overview & Problem Statement
 
-- Time-consuming  
-- Requires expert presence  
-- Error-prone  
-- Not scalable for large farms  
+Plant diseases threaten global agricultural yields, food security, and smallholder farmer livelihoods. While Deep Convolutional Neural Networks (CNNs) achieve impressive accuracy on benchmark leaf image datasets, traditional black-box classifiers exhibit critical limitations in real-world agricultural deployment:
 
-This project builds an AI system that detects plant diseases using leaf images — fast, accurate, and scalable.
+1. **Lack of Interpretability**: Visual predictions lack visual justification for agronomists.
+2. **Uncalibrated Overconfidence**: Standard Softmax networks produce high confidence scores even on corrupted, noisy, or out-of-distribution (OOD) images.
+3. **LLM Hallucinations**: Generative AI models often fabricate unverified chemical dosages or pesticide names when asked for plant care advice.
 
-## Project Overview
-This project uses **deep learning + transfer learning (ResNet50)** to classify **38 plant disease categories**, including healthy plants.
+### Primary Research Framing
+> *"An Explainable and Retrieval-Augmented AI Decision-Support System for Plant Disease Diagnosis and Management."*
 
-### Key Features
-- Leaf image upload & preprocessing  
-- Automatic disease prediction  
-- Grad-CAM region highlighting  
-- AI care recommendations via Hugging Face **LLM API integration**  
-- Stylish Streamlit UI  
-- Cloud deployment ready  
+*Note: This system provides clinical decision support and verified agronomic protocols—it does not claim guaranteed cures or medical/agricultural certainty.*
 
-## Tech Stack
+---
 
-### Core
-- Python 3.8+
-- TensorFlow 2.x, Keras
-- Streamlit
-- OpenCV, NumPy, Pandas
-- Matplotlib, Seaborn
+## 🏗️ System Architecture & Workflow
 
-### AI Models
-- **ResNet50** (Transfer learning)
-- **Mistral-7B-Instruct** (HuggingFace — plant care suggestions)
-
-### Tools
-- Jupyter Notebook
-- Git & GitHub
-- Kaggle Dataset
-
-## Dataset
-### PlantVillage Dataset
-- Source: Kaggle
-- ~54,000 images
-- 38 classes (multiple crop types & diseases)
-- JPG/PNG, RGB images
-- Class imbalance addressed using augmentation
-
-
-## Approach & Methodology
-
-### Data Preprocessing
-- Resize → 224×224
-- Normalization
-- Train/Validation/Test = 70/15/15
-- Stratified sampling
-
-### Data Augmentation
-- Random flips, rotation, zoom
-- Brightness / contrast shifts
-
-### Model Development
-| Stage | Method | Purpose |
-|-------|--------|---------|
-| Phase-1 | Custom CNN | Baseline |
-| Phase-2 | ResNet50 pretrained | High feature specialization |
-| Phase-3 | Layer unfreezing | Domain adaptation |
-
-### Evaluation
-- Accuracy, confusion matrix
-- Grad-CAM interpretability
-
-## Implementation
-
-### Model Architecture (ResNet50-based)
-```python
-inputs = Input(shape=(224, 224, 3))
-base_model = ResNet50(weights='imagenet', include_top=False)
-base_model.trainable = False
-
-x = GlobalAveragePooling2D()(base_model.output)
-x = Dense(256, activation='relu')(x)
-x = Dropout(0.4)(x)
-outputs = Dense(38, activation='softmax')(x)
+```text
+               ┌──────────────────────────────┐
+               │    Input Leaf Image (224x224)│
+               └──────────────┬───────────────┘
+                              │
+                              ▼
+               ┌──────────────────────────────┐
+               │ Image Preprocessing & Norm   │
+               └──────────────┬───────────────┘
+                              │
+                              ▼
+               ┌──────────────────────────────┐
+               │  ResNet50 Backbone (GAP Head)│
+               └──────────────┬───────────────┘
+                              │
+                              ▼
+               ┌──────────────────────────────┐
+               │ 38-Class Softmax Prediction  │
+               └──────────────┬───────────────┘
+                              │
+             ┌────────────────┴────────────────┐
+             ▼                                 ▼
+┌──────────────────────────┐      ┌──────────────────────────┐
+│ Grad-CAM Feature Map     │      │ Confidence & Reliability │
+│ (Layer: conv5_block3_out)│      │ Threshold Check (>0.60)  │
+└────────────┬─────────────┘      └────────────┬─────────────┘
+             │                                 │
+             ▼                                 ▼
+┌──────────────────────────┐      ┌──────────────────────────┐
+│ Attention Severity Area  │      │ RAG Knowledge Retrieval  │
+│ (Heuristic Indicator)    │      │ (38-Class Agronomic DB)  │
+└────────────┬─────────────┘      └────────────┬─────────────┘
+             │                                 │
+             └────────────────┬────────────────┘
+                              │
+                              ▼
+               ┌──────────────────────────────┐
+               │ Context-Grounded LLM Engine  │
+               │ (Qwen2.5 / Mistral-7B)       │
+               └──────────────┬───────────────┘
+                              │
+             ┌────────────────┴────────────────┐
+             ▼                                 ▼
+┌──────────────────────────┐      ┌──────────────────────────┐
+│ Streamlit Decision UI    │      │ Printable PDF Report     │
+│ (Chatbot & Multi-Lang)   │      │ (Executive Diagnostic Card)│
+└──────────────────────────┘      └──────────────────────────┘
 ```
 
-### Training Strategy
+---
 
-| Phase | Trainable Layers | Learning Rate | Goal | Outcome |
-|-------|------------------|---------------|------|---------|
-| Phase-1 | Frozen base model | 1e-4 | Fast learning | Removed Overfitting |
-| Phase-2 | Last 30 layers unfrozen | 1e-5 | Fine-tuning | +2% accuracy gain |
+## ✨ Key Features & Capabilities
 
-### Additional Engineering
+- 🌿 **38-Category Plant Diagnosis**: Classifies healthy and diseased leaves across Apple, Corn, Grape, Potato, Tomato, Strawberry, Cherry, Peach, Pepper, and Blueberry crops.
+- 🔍 **Grad-CAM Visual Explainability**: Renders spatial heatmap overlays targeting layer `conv5_block3_out` to highlight leaf regions driving model classification.
+- 📊 **Attention-Based Severity Heuristic**: Computes spatial feature activation area percentages with built-in uncertainty guardrails.
+- 📚 **RAG Agronomist Engine**: Retrieves verified symptoms, chemical dosages, organic remedies, and prevention strategies from `rag_knowledge_base.json` to ground LLM care plans.
+- 💬 **Interactive Agri-Chatbot**: Farmers can ask follow-up questions regarding chemical safety, organic alternatives, or application timing.
+- 📄 **Downloadable PDF Health Cards**: Exports an official diagnostic card containing model confidence, severity metrics, and care protocols.
+- 🌍 **Multi-Language Support**: Fully compatible with English, Hindi, Spanish, and French.
 
-- Optimizer → Adam
-- Loss → SparseCategoricalCrossentropy
-- Regularization → Dropout + Data Augmentation
-- Callbacks → EarlyStopping + ReduceLROnPlateau
+---
 
-### Evaluation & Visualization
+## 📁 Repository Structure
 
-- Accuracy, Loss trends
-- Classification Report (Precision, Recall, F1-Score)
-- Confusion Matrix
-- Grad-CAM heatmaps for explainable AI
-
-## Results
-
-| Model | Training | Validation | Test |
-|-------|----------|------------|------|
-| Baseline CNN | 83% | 77% | 79% |
-| ResNet50 Frozen | 70% | 89% | 85% |
-| ResNet50 Fine-Tuned | 83% | 94% | 94% |
-
-### Observations:
-
-- Excellent generalization — no major gap between Train & Test
-- Strong class separation confirmed by Grad-CAM and confusion matrix
-- Real-time performance achieved even without GPU
-
-### LLM-Based Recommendation System (API Integration)
-
-After disease classification, the system generates actionable plant care and prevention recommendations using a Large Language Model.
-
-- Integrated **Mistral-7B-Instruct-v0.2** via **Hugging Face Inference API**
-  using secure API tokens.
-- The predicted disease class, crop type, and severity context are
-  dynamically injected into structured prompts.
-- The LLM generates:
-  - Disease-specific treatment suggestions
-  - Preventive best practices
-  - General plant health improvement tips
-- Responses are post-processed to ensure concise, safe, and
-  domain-relevant recommendations suitable for end users.
-- This LLM module is fully integrated into the real-time Streamlit
-  inference pipeline, executing after CNN prediction.
-
-```python
-from huggingface_hub import InferenceClient
-import os
-
-client = InferenceClient(
-    provider="featherless-ai",
-    api_key=os.getenv("HUGGINGFACE_TOKEN")
-)
-
-prompt = f"""
-You are an expert plant pathologist.
-The detected condition is: {readable_prediction}.
-Provide detailed treatment and preventive care advice.
-"""
-
-completion = client.chat.completions.create(
-    model="mistralai/Mistral-7B-Instruct-v0.2",
-    messages=[
-        {"role": "system", "content": "You are a professional plant health expert."},
-        {"role": "user", "content": prompt}
-    ],
-    temperature=0.7,
-)
-
-response = completion.choices[0].message["content"]
+```text
+.
+├── AUDIT.md                        # Scientific audit of code, methodology, & claims
+├── RESEARCH_PLAN.md                # Research question, hypotheses, & experiment design
+├── VIVA_PREPARATION.md             # Oral examination & defense prep guide
+├── App.py                          # Streamlit web application
+├── pdf_generator.py                # FPDF2 PDF report generator
+├── rag_engine.py                   # RAG context retriever & multi-model LLM engine
+├── rag_knowledge_base.json         # 38-class verified agronomic knowledge base
+├── severity_estimator.py           # Attention-based severity heuristic module
+├── requirements.txt                # Python package dependencies
+├── runtime.txt                     # Python 3.11 environment configuration
+├── src/                            # Modular Python research source packages
+│   ├── calibration/
+│   ├── evaluation/
+│   ├── explainability/
+│   ├── models/
+│   ├── preprocessing/
+│   └── rag/
+├── configs/                        # YAML experiment configurations
+├── data_splits/                    # Structured train/val/test CSV splits
+├── experiments/                    # Model run logs and artifacts
+└── results/                        # Evaluation metrics and publication plots
 ```
-### Why Use an LLM?
 
-Traditional rule-based mappings are insufficient for handling variations in crop types, disease severity, and treatment practices.
-The LLM enables:
-- Flexible, context-aware recommendations
-- Scalable support for new diseases without retraining rules
-- Human-like, actionable guidance for end users
+---
 
-**Inference Flow:**
-Leaf Image → CNN Prediction → Disease Class →
-LLM Prompt Construction → LLM API Call →
-Recommendation Generation → User Display
+## 💻 Local Setup & Execution
 
-## Live Application
+### 1. Environment Setup
+```powershell
+python -m venv .venv
+.\.venv\Scripts\activate
+pip install -r requirements.txt
+```
 
-**Link**: https://automated-plant-disease-detection.streamlit.app/
+### 2. Configure API Key (Optional for LLM Advice)
+Create a `.env` file in the root folder:
+```env
+HF_TOKEN=your_huggingface_api_token_here
+```
 
-## Limitations & Challenges
+### 3. Run Application Locally
+```powershell
+streamlit run App.py
+```
 
-- Dataset: 
-   * Only PlantVillage classes
-   * No real-world noise (blur, lighting, multiple leaves)
+---
 
-- Model:
-   * Overconfident on out-of-distribution images
-   * No early uncertainty indicator
+## 📜 Research Limitations & Disclaimer
 
-- Deployment
-   * Streamlit RAM constraints
-   * Model loading time depends on cold start
- 
-## Future Improvements
-
-- Confidence calibration (Temperature Scaling)
-- TFLite quantization for mobile use
-- Add more crops and multiple co-occurring diseases
-- Offline prediction app with camera scanning
-- Disease treatment roadmap with severity scoring
-
-## Contact
-
-- GitHub → [@Ishaaq09](https://github.com/Ishaaq09)
-- Project → https://github.com/Ishaaq09/Automated_plant_disease_detection_using_Deep_Learning_and_Transfer_Learning
+1. **Decision Support**: This application is an AI-powered decision-support tool and should be paired with expert field agronomist verification.
+2. **Dataset Shift**: Images are trained on the PlantVillage dataset; field performance on heavily shadowed, blurry, or multi-leaf images may vary.
+3. **Attention Heuristic**: Grad-CAM heatmap activation indicates model spatial focus—it is not a substitute for ground-truth semantic lesion segmentation.
