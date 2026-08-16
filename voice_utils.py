@@ -77,24 +77,31 @@ def render_voice_input(language: str = "English") -> str | None:
     if not audio_bytes:
         return None
 
-    # Transcribe
+    # Transcribe — convert WebM/Opus → WAV first (browser records in WebM)
     try:
         import speech_recognition as sr  # type: ignore
+        from pydub import AudioSegment   # type: ignore
     except ImportError:
-        st.warning("Voice input unavailable: install `SpeechRecognition`.")
+        st.warning("Voice input unavailable: install `SpeechRecognition` and `pydub`.")
         return None
 
     recognizer = sr.Recognizer()
-    audio_file = io.BytesIO(audio_bytes)
 
     try:
-        with sr.AudioFile(audio_file) as source:
+        # Browser MediaRecorder produces WebM/Opus; pydub+ffmpeg converts it to WAV
+        webm_buffer = io.BytesIO(audio_bytes)
+        audio_segment = AudioSegment.from_file(webm_buffer)   # auto-detects format via ffmpeg
+        wav_buffer = io.BytesIO()
+        audio_segment.export(wav_buffer, format="wav")
+        wav_buffer.seek(0)
+
+        with sr.AudioFile(wav_buffer) as source:
             audio_data = recognizer.record(source)
         transcript = recognizer.recognize_google(audio_data, language=lang_code)
         st.success(f"🗣️ Heard: **{transcript}**")
         return transcript
     except sr.UnknownValueError:
-        st.warning("Could not understand the audio. Please try again with a clearer recording.")
+        st.warning("Could not understand the audio. Please try again — speak clearly and avoid background noise.")
         return None
     except sr.RequestError as e:
         st.error(f"Speech recognition service error: {e}. Check your internet connection.")
