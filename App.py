@@ -266,10 +266,14 @@ if upload_file is not None:
     superimposed_img = cv2.addWeighted(img_cv, 0.6, heatmap_color, 0.4, 0)
     superimposed_img_rgb = cv2.cvtColor(superimposed_img, cv2.COLOR_BGR2RGB)
 
+    # Low Confidence / Uncertainty Safety Guardrail
+    if confidence < 0.60:
+        st.warning("⚠️ **Low Prediction Confidence**: Model confidence is below 60%. Please upload a clearer, well-lit leaf image or consult a professional agronomist before taking chemical action.")
+
     # Diagnostic Header Metrics
     badge_class = "badge-healthy" if is_healthy else "badge-diseased"
     status_icon = "✅" if is_healthy else "⚠️"
-    status_text = "HEALTHY CROP" if is_healthy else "DISEASE DETECTED"
+    status_text = "HEALTHY CROP" if is_healthy else "DISEASE IDENTIFICATION SUPPORT"
 
     col1, col2, col3 = st.columns([2, 1, 1])
     with col1:
@@ -282,28 +286,30 @@ if upload_file is not None:
     with col2:
         st.markdown(f'''
             <div class="glass-card">
-                <div class="metric-label">Model Confidence</div>
+                <div class="metric-label">Model Confidence Score</div>
                 <div class="metric-value">{confidence * 100:.1f}%</div>
             </div>
         ''', unsafe_allow_html=True)
     with col3:
         st.markdown(f'''
             <div class="glass-card">
-                <div class="metric-label">Infection Severity</div>
+                <div class="metric-label">Attention Coverage Heuristic</div>
                 <div class="metric-value" style="color:{severity_metrics['badge_color']};">{severity_metrics['affected_percentage']}%</div>
                 <div style="font-size:0.78rem; color:#94a3b8;">{severity_metrics['severity_level']}</div>
             </div>
         ''', unsafe_allow_html=True)
 
-    # RAG Context Retrieval
+    st.caption("ℹ️ *Disclaimer: Attention Coverage is an experimental Grad-CAM feature area heuristic and not a ground-truth measurement of biological leaf infection.*")
+
+    # Knowledge Context Retrieval
     rag_data = retrieve_disease_context(predicted_class)
 
     # Multi-Tab Application Blueprint
     tab1, tab2, tab3, tab4 = st.tabs([
         "🔍 Visual & Grad-CAM Analysis",
-        "📚 RAG Certified Protocol",
-        "💬 Interactive Agri-Chatbot",
-        "📄 PDF Diagnostic Report"
+        "📚 Knowledge-Grounded Protocol",
+        "💬 Knowledge-Grounded Agri-Assistant",
+        "📄 PDF Decision-Support Report"
     ])
 
     with tab1:
@@ -311,41 +317,41 @@ if upload_file is not None:
         with c1:
             st.image(image, caption="Original Input Leaf Image", use_container_width=True)
         with c2:
-            st.image(superimposed_img_rgb, caption="Grad-CAM Attention Heatmap", use_container_width=True)
+            st.image(superimposed_img_rgb, caption="Grad-CAM Attention Heatmap (Model Focus Region)", use_container_width=True)
 
     with tab2:
-        st.markdown("### 📚 RAG Certified Agronomist Guidelines")
+        st.markdown("### 📚 Knowledge-Grounded Disease Management Guidelines")
         col_rag1, col_rag2 = st.columns(2)
         with col_rag1:
             st.markdown(f"**🔬 Symptoms:**\n{rag_data['symptoms']}")
-            st.markdown(f"**🧪 Chemical Treatment:**\n{rag_data['chemical_treatment']}")
+            st.markdown(f"**🧪 Chemical Management:**\n{rag_data['chemical_treatment']}")
         with col_rag2:
-            st.markdown(f"**🌿 Organic Remedy:**\n{rag_data['organic_remedy']}")
-            st.markdown(f"**🛡️ Prevention:**\n{rag_data['prevention']}")
+            st.markdown(f"**🌿 Organic & Cultural Management:**\n{rag_data['organic_remedy']}")
+            st.markdown(f"**🛡️ Prevention & Sanitation:**\n{rag_data['prevention']}")
             
         load_dotenv()
         HF_TOKEN = st.session_state.get("HF_TOKEN") or os.getenv("HF_TOKEN") or os.getenv("HUGGINGFACE_TOKEN")
         
         if HF_TOKEN:
             st.divider()
-            if st.button("🤖 Generate Comprehensive RAG Care Roadmap (LLM)", type="primary"):
-                with st.spinner(f"Generating certified agronomist advice in {language}..."):
+            if st.button("🤖 Generate Knowledge-Grounded Care Protocol (LLM)", type="primary"):
+                with st.spinner(f"Generating decision-support protocol in {language}..."):
                     try:
                         advice = generate_rag_care_advice(readable_prediction, predicted_class, HF_TOKEN, language)
                         st.markdown(f'''
                             <div class="glass-card">
-                                <h3 style="color:#34d399; margin-top:0;">📋 Tailored Care Roadmap</h3>
+                                <h3 style="color:#34d399; margin-top:0;">📋 Evidence-Grounded Recommendations</h3>
                                 <div>{advice}</div>
                             </div>
                         ''', unsafe_allow_html=True)
                     except Exception as e:
                         st.error(f"Hugging Face API Authentication Error: {e}. Please double check your token permissions.")
         else:
-            st.info("💡 Enter your Hugging Face API token in the sidebar to generate custom LLM care advice.")
+            st.info("💡 Enter your Hugging Face API token in the sidebar to generate custom LLM decision support.")
 
     with tab3:
-        st.markdown("### 💬 Talk to Your Crop (Interactive Agri-Chatbot)")
-        st.caption("Ask questions about treatments, chemical safety, or organic alternatives.")
+        st.markdown("### 💬 Knowledge-Grounded Agri-Assistant")
+        st.caption("Ask follow-up questions about disease management, chemical safety, or organic alternatives.")
         
         if "chat_history" not in st.session_state:
             st.session_state.chat_history = []
@@ -374,11 +380,11 @@ if upload_file is not None:
                         except Exception as e:
                             st.error(f"API Error: {e}")
             else:
-                st.error("Please provide a Hugging Face API Token in the sidebar to use the Agri-Chatbot.")
+                st.error("Please provide a Hugging Face API Token in the sidebar to use the Agri-Assistant.")
 
     with tab4:
-        st.markdown("### 📄 Export PDF Health Report")
-        st.write("Generate and download an official diagnostic card containing model confidence, severity metrics, and RAG care guidelines.")
+        st.markdown("### 📄 Export Decision-Support PDF Report")
+        st.write("Generate and download an official decision-support card containing model confidence, attention metrics, and management guidelines.")
         
         if st.button("📥 Generate & Download PDF Report"):
             pdf_path = create_pdf_report(
@@ -390,7 +396,7 @@ if upload_file is not None:
             )
             with open(pdf_path, "rb") as f:
                 st.download_button(
-                    label="💾 Save Diagnostic PDF Report",
+                    label="💾 Save Decision-Support PDF Report",
                     data=f,
                     file_name=f"Plant_Health_Report_{predicted_class}.pdf",
                     mime="application/pdf"
