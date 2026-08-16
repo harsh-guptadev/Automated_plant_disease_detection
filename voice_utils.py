@@ -61,24 +61,30 @@ def render_voice_input(language: str = "English") -> str | None:
         unsafe_allow_html=True,
     )
 
+    # Dynamic key: changes after every exchange so the widget gets a fresh
+    # Streamlit component instance — prevents state accumulation that causes
+    # the mic to freeze after 3-4 responses.
+    chat_len = len(st.session_state.get("chat_history", []))
+    mic_key = f"agrivision_mic_{chat_len}"
+
     audio = mic_recorder(
         start_prompt="🎤  Start Speaking",
         stop_prompt="⏹  Stop & Transcribe",
-        just_once=False,          # We handle deduplication ourselves via audio id
+        just_once=False,
         use_container_width=True,
-        key="agrivision_mic",
+        key=mic_key,
     )
 
     if audio is None:
         return None
 
-    # ── Deduplicate: only process each new recording once ──────────────────
+    # ── Deduplicate within the same widget instance ────────────────────────
     audio_id = audio.get("id", -1)
-    if st.session_state.get("_last_mic_id") == audio_id:
-        # This is the same recording we already processed — skip it so
-        # the user can type a follow-up question without it being overridden.
+    dedup_key = f"_last_mic_id_{mic_key}"
+    if st.session_state.get(dedup_key) == audio_id:
+        # Same recording already sent — do not resend
         return None
-    st.session_state["_last_mic_id"] = audio_id
+    st.session_state[dedup_key] = audio_id
     # ───────────────────────────────────────────────────────────────────────
 
     audio_bytes: bytes = audio.get("bytes", b"")
