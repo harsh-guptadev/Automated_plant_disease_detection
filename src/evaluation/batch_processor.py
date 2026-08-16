@@ -2,9 +2,11 @@
 batch_processor.py
 ==================
 Batch image evaluation module for multi-leaf field diagnostics and CSV report logging.
+Includes Grad-CAM heatmap visualization for visual photo grid cards.
 """
 
 import io
+import cv2
 import pandas as pd
 import numpy as np
 from PIL import Image
@@ -23,8 +25,8 @@ def process_batch_images(
     Processes a list of uploaded leaf image files.
     Returns:
         summary_stats (dict): Field-level aggregated health metrics.
-        results_list (list of dicts): Detailed per-image metadata.
-        df (pd.DataFrame): Structured tabular representation for CSV export.
+        results_list (list of dicts): Detailed per-image metadata including leaf photos & Grad-CAM overlays.
+        df_export (pd.DataFrame): Structured tabular representation for CSV export.
     """
     results_list = []
     healthy_count = 0
@@ -38,7 +40,7 @@ def process_batch_images(
             image_resized = image.resize((224, 224))
             image_array = np.array(image_resized)
             image_batch = np.expand_dims(image_array, axis=0)
-            image_batch_preprocessed = preprocess_input(image_batch)
+            image_batch_preprocessed = preprocess_input(image_batch.copy())
 
             predictions = model.predict(image_batch_preprocessed, verbose=0)
             confidence = float(np.max(predictions))
@@ -57,6 +59,14 @@ def process_batch_images(
             try:
                 heatmap = make_gradcam_fn(image_batch_preprocessed, model)
                 severity_metrics = estimate_severity_fn(heatmap, confidence=confidence)
+
+                img_cv = np.array(image)
+                img_cv = cv2.cvtColor(img_cv, cv2.COLOR_RGB2BGR)
+                heatmap_resized = cv2.resize(heatmap, (img_cv.shape[1], img_cv.shape[0]))
+                heatmap_uint8 = np.uint8(255 * heatmap_resized)
+                heatmap_color = cv2.applyColorMap(heatmap_uint8, cv2.COLORMAP_JET)
+                superimposed_img = cv2.addWeighted(img_cv, 0.6, heatmap_color, 0.4, 0)
+                superimposed_img_rgb = cv2.cvtColor(superimposed_img, cv2.COLOR_BGR2RGB)
             except Exception:
                 severity_metrics = {
                     "affected_percentage": 0.0,
@@ -65,6 +75,7 @@ def process_batch_images(
                     "urgency": "Low",
                     "is_uncertain": confidence < 0.60
                 }
+                superimposed_img_rgb = np.array(image)
 
             if "High" in severity_metrics.get("urgency", ""):
                 high_urgency_count += 1
@@ -79,7 +90,10 @@ def process_batch_images(
                 "Urgency": severity_metrics["urgency"],
                 "raw_confidence": confidence,
                 "is_healthy": is_healthy,
-                "image": image
+                "image": image,
+                "superimposed_img_rgb": superimposed_img_rgb,
+                "severity_metrics": severity_metrics,
+                "predicted_class": predicted_class
             }
             results_list.append(item)
         except Exception as e:

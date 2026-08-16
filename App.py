@@ -295,7 +295,37 @@ if upload_files and len(upload_files) > 1:
             </div>
         ''', unsafe_allow_html=True)
 
-    st.markdown("#### 📋 Field Inspection Log")
+    st.markdown("#### 🖼️ Visual Leaf Photo Inspection Gallery")
+    st.caption("Visual inspection gallery displaying individual leaf sample photos, diagnoses, and Grad-CAM heatmaps.")
+
+    grid_cols = st.columns(3)
+    for idx, res in enumerate(results_list):
+        col = grid_cols[idx % 3]
+        with col:
+            badge_color = "#34d399" if res["is_healthy"] else "#f87171"
+            badge_label = "✅ HEALTHY CROP" if res["is_healthy"] else "⚠️ DISEASE DETECTED"
+            
+            st.markdown(f'''
+                <div class="glass-card" style="padding:14px; margin-bottom:10px;">
+                    <span class="status-badge" style="background:rgba(15,33,26,0.8); color:{badge_color}; border:1px solid {badge_color};">
+                        {badge_label}
+                    </span>
+                    <h4 style="margin:6px 0 4px 0; color:#ffffff; font-size:1.05rem;">{res["Detected Condition"]}</h4>
+                    <div style="font-size:0.83rem; color:#94a3b8;">
+                        <b>Confidence:</b> {res["Confidence Score"]} | <b>Coverage:</b> {res["Attention Coverage"]}
+                    </div>
+                    <div style="font-size:0.75rem; color:#cbd5e1; margin-top:4px;">
+                        📄 File: <code>{res["Filename"]}</code>
+                    </div>
+                </div>
+            ''', unsafe_allow_html=True)
+            
+            st.image(res["image"], caption=f"Sample: {res['Filename']}", use_container_width=True)
+            
+            with st.expander(f"🔍 View Grad-CAM Heatmap"):
+                st.image(res["superimposed_img_rgb"], caption="Grad-CAM Spatial Focus Overlay", use_container_width=True)
+
+    st.markdown("#### 📋 Field Inspection Log Data Table")
     st.dataframe(df_export, use_container_width=True)
 
     # CSV Download Button
