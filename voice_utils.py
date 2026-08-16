@@ -71,33 +71,56 @@ def _webm_to_wav(audio_bytes: bytes) -> bytes:
 
 def _transcribe_whisper(wav_bytes: bytes, language: str, hf_token: str) -> str | None:
     """
-    Send WAV bytes to HF Whisper API.
-    Returns transcript string or None on failure.
+    Send WAV bytes to HF Whisper API with an explicit language parameter.
+    Using JSON + base64 payload ensures the language hint is honoured by Whisper.
     """
-    lang = WHISPER_LANG_MAP.get(language, "english")
-    headers = {"Authorization": f"Bearer {hf_token}"}
+    # Map to ISO 639-1 codes that Whisper accepts
+    lang_iso = {
+        "English": "en",
+        "Hindi":   "hi",
+        "Spanish": "es",
+        "French":  "fr",
+    }.get(language, "en")
+
+    headers = {
+        "Authorization": f"Bearer {hf_token}",
+        "Content-Type":  "application/json",
+    }
+    # Base64-encode audio so it travels cleanly inside JSON
+    audio_b64 = base64.b64encode(wav_bytes).decode()
+    payload = {
+        "inputs": audio_b64,
+        "parameters": {"language": lang_iso},
+    }
 
     for model in WHISPER_MODELS:
         url = f"https://api-inference.huggingface.co/models/{model}"
         try:
-            resp = requests.post(
-                url,
-                headers=headers,
-                data=wav_bytes,
-                timeout=30,
-            )
+            resp = requests.post(url, headers=headers, json=payload, timeout=40)
+
             if resp.status_code == 200:
                 data = resp.json()
-                text = data.get("text", "").strip()
+                # HF returns {"text": "..."} for ASR
+                text = data.get("text", "").strip() if isinstance(data, dict) else ""
                 if text:
                     return text
+
             elif resp.status_code == 503:
-                # Model loading — try next
-                continue
+                # Model still loading — wait a moment and retry once
+                import time
+                time.sleep(4)
+                resp2 = requests.post(url, headers=headers, json=payload, timeout=40)
+                if resp2.status_code == 200:
+                    data = resp2.json()
+                    text = data.get("text", "").strip() if isinstance(data, dict) else ""
+                    if text:
+                        return text
+
         except requests.Timeout:
             continue
         except Exception:
             continue
+
     return None
 
 
