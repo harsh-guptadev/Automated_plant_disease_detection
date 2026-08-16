@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 from rag_engine import retrieve_disease_context, generate_rag_care_advice, chat_with_agronomist_rag
 from severity_estimator import estimate_disease_severity
 from pdf_generator import create_pdf_report
-from voice_utils import render_voice_input_component, speak_response
+from voice_utils import render_voice_input, speak_response
 
 # Page setup
 st.set_page_config(
@@ -368,8 +368,7 @@ if upload_file is not None:
                 st.write(msg["content"])
 
         # ── Voice input widget ────────────────────────────────────────────────
-        st.markdown("**🎤 Voice Input** — click the microphone, speak, then press Send:")
-        voice_transcript = render_voice_input_component(language=language, height=120)
+        voice_transcript = render_voice_input(language=language)
 
         # ── Text input ────────────────────────────────────────────────────────
         user_input = st.chat_input(f"Or type your question about {readable_prediction}...")
