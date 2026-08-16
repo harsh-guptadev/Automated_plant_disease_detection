@@ -100,46 +100,38 @@ def render_voice_input(language: str = "English") -> str | None:
         return None
 
     recognizer = sr.Recognizer()
-
-    # ── Tune recognizer for better pickup ──────────────────────────────────
-    recognizer.energy_threshold = 200          # lower = more sensitive (default 300)
-    recognizer.dynamic_energy_threshold = True # auto-adjusts to mic level
-    recognizer.pause_threshold = 0.6           # shorter silence needed to end phrase
-    recognizer.phrase_threshold = 0.1          # quicker phrase start detection
-    recognizer.non_speaking_duration = 0.4     # faster trailing silence cutoff
-    # ───────────────────────────────────────────────────────────────────────
+    # Keep energy threshold lower so quiet speech is detected
+    recognizer.energy_threshold = 200
+    recognizer.dynamic_energy_threshold = True
 
     with st.spinner("🔄 Transcribing your voice..."):
         try:
             webm_buffer = io.BytesIO(audio_bytes)
-            audio_seg   = AudioSegment.from_file(webm_buffer)   # ffmpeg auto-detects
+            audio_seg   = AudioSegment.from_file(webm_buffer)
 
-            # ── Normalize volume to -14 dBFS for consistent loudness ──────
-            target_dBFS = -14.0
-            change_in_dBFS = target_dBFS - audio_seg.dBFS
-            audio_seg = audio_seg.apply_gain(change_in_dBFS)
-            # ── Upsample to 16 kHz mono — optimal for Google STT ──────────
-            audio_seg = audio_seg.set_frame_rate(16000).set_channels(1)
-            # ─────────────────────────────────────────────────────────────
+            # Normalize volume and convert to 16 kHz mono (optimal for Google STT)
+            target_dBFS   = -14.0
+            audio_seg     = audio_seg.apply_gain(target_dBFS - audio_seg.dBFS)
+            audio_seg     = audio_seg.set_frame_rate(16000).set_channels(1)
 
             wav_buffer = io.BytesIO()
             audio_seg.export(wav_buffer, format="wav")
             wav_buffer.seek(0)
 
+            # NOTE: do NOT call adjust_for_ambient_noise() on AudioFile —
+            # it is for live mic streams and silently eats the first N
+            # seconds of pre-recorded audio, discarding speech.
             with sr.AudioFile(wav_buffer) as source:
-                recognizer.adjust_for_ambient_noise(source, duration=0.3)
                 audio_data = recognizer.record(source)
 
             transcript = recognizer.recognize_google(
-                audio_data,
-                language=lang_code,
-                show_all=False,
+                audio_data, language=lang_code, show_all=False
             )
             st.success(f"🗣️ Heard: **{transcript}**")
             return transcript
 
         except sr.UnknownValueError:
-            st.warning("⚠️ Could not understand — please speak clearly, closer to the mic, and avoid background noise.")
+            st.warning("⚠️ Could not understand — speak clearly and avoid background noise.")
             return None
         except sr.RequestError as e:
             st.error(f"Speech recognition service error: {e}")
