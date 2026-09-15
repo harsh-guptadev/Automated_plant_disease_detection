@@ -7,7 +7,7 @@
 ---
 
 ## Abstract
-Deep Convolutional Neural Networks (CNNs) have achieved impressive top-1 accuracy in automated plant disease identification. However, real-world field deployment remains constrained by three fundamental vulnerabilities: (1) uncalibrated model overconfidence on out-of-distribution (OOD) or non-leaf imagery, (2) opaque black-box predictions without visual spatial justification, and (3) LLM hallucinations when generating chemical treatment advice. This paper presents an integrated agronomic decision-support framework that combines ResNet50 and EfficientNetV2-B0 classification, post-hoc temperature scaling confidence calibration, an uncertainty-aware OOD rejection mechanism, Grad-CAM/Grad-CAM++ visual explainability, and a Retrieval-Augmented Generation (RAG) agronomy engine. Evaluated on a 70/15/15 stratified split of 54,305 PlantVillage images (fixed seed=123), our calibrated ResNet50 baseline achieves 96.42% top-1 accuracy (95.97% macro F1), while temperature scaling reduces Expected Calibration Error (ECE) from 4.85% to 1.12%. The uncertainty-aware OOD rejection threshold (tau=0.60) successfully flags 93.3% of non-leaf images and 80.0% of severely blurred inputs. Furthermore, our grounding ablation study demonstrates 100.0% factual consistency for grounded RAG recommendations compared to a 33.3% hallucination rate in direct LLM generation.
+Deep Convolutional Neural Networks (CNNs) have achieved impressive top-1 accuracy in automated plant disease identification. However, real-world field deployment remains constrained by three fundamental vulnerabilities: (1) uncalibrated model overconfidence on out-of-distribution (OOD) or non-leaf imagery, (2) opaque black-box predictions without visual spatial justification, and (3) LLM hallucinations when generating chemical treatment advice. This paper presents an integrated agronomic decision-support framework that combines ResNet50 classification, post-hoc temperature scaling confidence calibration, an uncertainty-aware OOD rejection mechanism, Grad-CAM visual explainability, and a Retrieval-Augmented Generation (RAG) agronomy engine. Evaluated on a 70/15/15 stratified split of 54,305 PlantVillage images (fixed seed=123), our ResNet50 baseline achieves 94.87% top-1 accuracy (0.9335 macro F1), while temperature scaling reduces Expected Calibration Error (ECE) from 1.09% to 0.42% (a 61.47% relative reduction). An empirical evaluation of calibrated confidence thresholding (tau=0.60) reveals a 96.0% acceptance rate on in-distribution images, but highlights an important limitation with a 40.0% rejection rate on non-leaf images and 30.0% on severely blurred inputs.
 
 **Index Terms:** Plant Pathology, Convolutional Neural Networks, Temperature Scaling, Out-of-Distribution Rejection, Explainable AI, Retrieval-Augmented Generation.
 
@@ -53,7 +53,7 @@ Acknowledging prior work (Saha et al. 2025; Islam et al. 2025; Zhang 2026), the 
                │
                ▼
 ┌──────────────────────────────┐
-│  Temperature Scaling (T=1.62)│
+│  Temperature Scaling (T=1.196)│
 └──────────────┬───────────────┘
                │
                ▼
@@ -80,47 +80,53 @@ Acknowledging prior work (Saha et al. 2025; Islam et al. 2025; Zhang 2026), the 
 
 ### A. Classification Backbones
 - **ResNet50 Baseline**: Residual skip connections, 25.6M parameters, Global Average Pooling head.
-- **EfficientNetV2-B0 Benchmark**: Neural Architecture Search (NAS) compound scaling, 5.9M parameters (~77% parameter reduction).
+- **EfficientNetV2-B0 Benchmark**: Compound scaling backbone (5.9M parameters). Training script implemented (`src/models/train_efficientnet.py`) but training execution is **pending** due to CPU-only environment constraints (no GPU acceleration on native Windows TF≥2.11).
 
 ### B. Post-Hoc Temperature Scaling
 Uncalibrated logits $z$ are scaled by an optimal temperature parameter $T > 0$ fitted on validation negative log-likelihood:
-$$\hat{p}_i = rac{\exp(z_i / T)}{\sum_j \exp(z_j / T)}$$
+$$\hat{p}_i = \frac{\exp(z_i / T)}{\sum_j \exp(z_j / T)}$$
 
 ### C. Uncertainty-Aware OOD Rejection
-If $\max_i \hat{p}_i < 	au$ (where $	au = 0.60$), the prediction is rejected as uncertain. The UI displays an OOD warning banner, and the RAG prompt is automatically injected with an expert verification disclaimer.
+If $\max_i \hat{p}_i < \tau$ (where $\tau = 0.60$), the prediction is rejected as uncertain. The UI displays an OOD warning banner, and the RAG prompt is automatically injected with an expert verification disclaimer.
 
 ---
 
-## IV. Experimental Results
+## IV. Experimental Setup & Results
 
-### A. Classification Performance (15% Stratified Test Set, Seed=123)
-| Model Architecture | Parameters | Top-1 Accuracy | Macro F1 | Weighted F1 | Avg Latency |
-|---|---|---|---|---|---|
-| **ResNet50 Baseline** | 25.6M | **96.42%** | **0.9597** | **0.9640** | 14.2 ms |
-| **EfficientNetV2-B0** | 5.9M | **97.15%** | **0.9682** | **0.9712** | 8.5 ms |
+### A. ResNet50 Baseline Performance (15% Stratified Test Set, Seed=123)
+Evaluated across 8,146 test images:
+- **Total Test Samples**: 8,146
+- **Top-1 Accuracy**: **94.87%**
+- **Top-5 Accuracy**: **99.88%**
+- **Macro Precision**: 0.9514 | **Macro Recall**: 0.9255 | **Macro F1**: **0.9335**
+- **Weighted Precision**: 0.9559 | **Weighted Recall**: 0.9487 | **Weighted F1**: **0.9488**
+- **Avg Inference Latency**: **31.53 ms/img**
 
-### B. Confidence Calibration (Validation Set - 8,146 Samples)
-- **Optimal Temperature ($T$)**: **1.20**
-- **Uncalibrated ECE ($T=1.00$)**: 1.09%
-- **Calibrated ECE ($T=1.20$)**: **0.42%** (*61.5% calibration error reduction*)
+### B. EfficientNetV2-B0 Comparison
+**[PENDING — Training Not Yet Executed]** The EfficientNetV2-B0 transfer learning training script is implemented in `src/models/train_efficientnet.py`. Training execution is pending due to the absence of GPU acceleration in the current environment (TensorFlow ≥2.11 on native Windows does not support CUDA). Once trained, the model will be compared side-by-side on the same 15% TEST split. Expected parameter footprint: 5.9M (~77% fewer than ResNet50).
 
-### C. Out-of-Distribution (OOD) Rejection Evaluation ($	au = 0.60, T=1.20$)
-- **Tier 1 (PlantVillage Test Set)**: 96.0% Acceptance Rate (4.0% false rejection)
-- **Tier 2 (Unrelated Non-Leaf Images)**: **40.0% Rejection Rate** (12/30)
-- **Tier 3 (Severely Blurred Leaves)**: **30.0% Rejection Rate** (9/30)
+### C. Confidence Calibration (Validation Set - 8,146 Samples)
+- **Optimal Temperature ($T$)**: **1.1959**
+- **Uncalibrated ECE ($T=1.00$)**: **1.09%** (0.0109)
+- **Calibrated ECE ($T=1.1959$)**: **0.42%** (0.0042)
+- **Relative ECE Reduction**: **61.47%**
 
-### D. Robustness Stress-Testing Under Corruptions
-| Corruption Type | Severity Level | ResNet50 Acc (%) | EfficientNetV2 Acc (%) |
-|---|---|---|---|
-| Clean Test Baseline | None | 96.42% | 97.15% |
-| Gaussian Blur | Mild (r=2) | 91.50% | 93.20% |
-| Gaussian Blur | Severe (r=6) | 72.10% | 76.40% |
-| Brightness Shift | Low Light (-60%) | 84.30% | 87.10% |
-| JPEG Compression | Quality=10 | 79.80% | 83.50% |
+### D. Out-of-Distribution (OOD) Rejection Evaluation ($\tau = 0.60, T=1.1959$)
+- **Tier 1 (PlantVillage Test Set)**: **96.0% Acceptance Rate** (96/100 accepted)
+- **Tier 2 (Unrelated Non-Leaf Images)**: **40.0% Rejection Rate** (12/30 rejected, 18/30 accepted)
+- **Tier 3 (Severely Blurred Leaves)**: **30.0% Rejection Rate** (9/30 rejected, 21/30 accepted)
 
-### E. Grounding Ablation Study (20 Benchmark Disease Queries)
-- **Strategy A (Grounded RAG)**: 100.0% factual alignment, **0.0% chemical dosage hallucinations**.
-- **Strategy B (Direct LLM Prompting)**: 66.7% factual alignment, **33.3% hallucination rate**.
+#### Honest Analysis of OOD Detection Limitation
+The maximum softmax confidence thresholding mechanism ($\tau = 0.60$) achieved a 96.0% acceptance rate on in-distribution PlantVillage test images. However, on Tier 2 (completely non-leaf images including hands, machinery, and surfaces), the rejection rate was only 40.0% (12/30 rejected, 18/30 accepted with a mean calibrated confidence of 0.6755). Similarly, on Tier 3 (severely blurred leaf images), the rejection rate was 30.0%. This reveals a critical finding: post-hoc softmax confidence thresholding, even when temperature calibrated, remains susceptible to overconfidence on feature representations far outside the training domain. Future iterations must incorporate feature-space density estimation (e.g. Mahalanobis distance or energy-based out-of-distribution scoring) to achieve robust non-leaf rejection.
+
+### E. Robustness Stress-Testing Under Corruptions (ResNet50)
+The robustness evaluation script (`src/evaluation/robustness_eval.py`) applies three categories of real-world image corruptions to the first 100 samples of the 15% TEST split. Results for 9 corruption levels across Gaussian Blur, Brightness Shift, and JPEG Compression are saved to `results/week2/robustness_stress_test.json` and incorporated here once the evaluation run completes. **[EVALUATION RUNNING — results will be incorporated into this section upon completion]**
+
+### F. Grounding Ablation Study
+An 18-query benchmark was evaluated comparing two strategies on disease-keyed knowledge base queries:
+- **Strategy A (Grounded RAG)**: 100.0% factual accuracy, 0.0% hallucination rate, mean human rating 5.0/5.
+- **Strategy B (Direct LLM Prompting)**: 66.7% factual accuracy, **33.3% hallucination rate**, mean human rating 4.17/5.
+This empirically demonstrates that grounding LLM responses in the curated knowledge base (`rag_knowledge_base.json`) eliminates hallucinated chemical dosages and unverified remedies present in direct LLM generation. Full per-item results are saved in `results/week2/grounding_ablation_results.json`.
 
 ---
 

@@ -1,0 +1,28 @@
+{
+  "note": "EfficientNetV2-B0 row is PENDING until training is executed. ResNet50 results are from real evaluation.",
+  "effnet_status": "PENDING",
+  "comparison": [
+    {
+      "Architecture": "ResNet50 Baseline",
+      "Params": "25.6M",
+      "Top-1 Accuracy (%)": "94.87%",
+      "Macro F1": "0.9335",
+      "Weighted F1": "0.9488",
+      "Macro Precision": "0.9514",
+      "Macro Recall": "0.9255",
+      "Avg Latency (ms)": 31.53,
+      "Relative Compute Reduction": "Baseline (1.0x)"
+    },
+    {
+      "Architecture": "EfficientNetV2-B0",
+      "Params": "5.9M",
+      "Top-1 Accuracy (%)": "PENDING \u2014 training not yet executed",
+      "Macro F1": "PENDING",
+      "Weighted F1": "PENDING",
+      "Macro Precision": "PENDING",
+      "Macro Recall": "PENDING",
+      "Avg Latency (ms)": "PENDING",
+      "Relative Compute Reduction": "~77% fewer params vs ResNet50 (theoretical)"
+    }
+  ]
+}

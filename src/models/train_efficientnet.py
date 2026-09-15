@@ -66,7 +66,7 @@ def train_and_evaluate_efficientnet(
     with open(test_split_json, "r", encoding="utf-8") as f:
         test_data = json.load(f)
 
-    weights_path = os.path.join(output_dir, "efficientnetv2_weights.h5")
+    weights_path = os.path.join(output_dir, "efficientnetv2_weights.weights.h5")
 
     if not os.path.exists(weights_path):
         print("[EfficientNetV2] Loading train/val split datasets for quick fine-tuning...")
