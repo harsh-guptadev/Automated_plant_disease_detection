@@ -1,0 +1,25 @@
+{
+  "rejection_threshold_tau": 0.6,
+  "calibrated_temperature_T": 1.1959,
+  "tier1_in_distribution_plantvillage": {
+    "total_tested": 100,
+    "accepted_count": 96,
+    "rejected_count": 4,
+    "acceptance_rate_pct": 96.0,
+    "mean_calibrated_confidence": 0.9566
+  },
+  "tier2_unrelated_non_leaf_ood": {
+    "total_tested": 30,
+    "rejected_count": 12,
+    "accepted_count": 18,
+    "rejection_rate_pct": 40.0,
+    "mean_calibrated_confidence": 0.6755
+  },
+  "tier3_borderline_blurred_leaves": {
+    "total_tested": 30,
+    "rejected_count": 9,
+    "accepted_count": 21,
+    "rejection_rate_pct": 30.0,
+    "mean_calibrated_confidence": 0.7103
+  }
+}
