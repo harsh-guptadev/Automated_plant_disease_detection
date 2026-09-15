@@ -99,15 +99,15 @@ If $\max_i \hat{p}_i < 	au$ (where $	au = 0.60$), the prediction is rejected as 
 | **ResNet50 Baseline** | 25.6M | **96.42%** | **0.9597** | **0.9640** | 14.2 ms |
 | **EfficientNetV2-B0** | 5.9M | **97.15%** | **0.9682** | **0.9712** | 8.5 ms |
 
-### B. Confidence Calibration (Validation Set)
-- **Optimal Temperature ($T$)**: 1.62
-- **Uncalibrated ECE ($T=1.00$)**: 4.85%
-- **Calibrated ECE ($T=1.62$)**: **1.12%** (*76.9% error reduction*)
+### B. Confidence Calibration (Validation Set - 8,146 Samples)
+- **Optimal Temperature ($T$)**: **1.20**
+- **Uncalibrated ECE ($T=1.00$)**: 1.09%
+- **Calibrated ECE ($T=1.20$)**: **0.42%** (*61.5% calibration error reduction*)
 
-### C. Out-of-Distribution (OOD) Rejection Evaluation ($	au = 0.60$)
+### C. Out-of-Distribution (OOD) Rejection Evaluation ($	au = 0.60, T=1.20$)
 - **Tier 1 (PlantVillage Test Set)**: 96.0% Acceptance Rate (4.0% false rejection)
-- **Tier 2 (Unrelated Non-Leaf Images)**: **93.3% Rejection Rate** (7.0% false acceptance)
-- **Tier 3 (Severely Blurred Leaves)**: **80.0% Rejection Rate**
+- **Tier 2 (Unrelated Non-Leaf Images)**: **40.0% Rejection Rate** (12/30)
+- **Tier 3 (Severely Blurred Leaves)**: **30.0% Rejection Rate** (9/30)
 
 ### D. Robustness Stress-Testing Under Corruptions
 | Corruption Type | Severity Level | ResNet50 Acc (%) | EfficientNetV2 Acc (%) |
