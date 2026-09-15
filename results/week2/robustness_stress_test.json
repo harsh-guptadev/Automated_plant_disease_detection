@@ -1,0 +1,98 @@
+{
+  "note": "ResNet50-only robustness evaluation. EfficientNetV2-B0 omitted (weights not yet available).",
+  "model": "ResNet50 Baseline (resnet_weights.npz)",
+  "test_split": "15% stratified (seed=123)",
+  "n_samples_per_corruption": 100,
+  "results": [
+    {
+      "corruption_type": "clean",
+      "severity_level": 0,
+      "description": "Clean Baseline",
+      "n_samples_evaluated": 100,
+      "n_samples_skipped": 0,
+      "resnet50_accuracy_pct": 98.0,
+      "resnet50_degradation_vs_clean_pct": 0.0
+    },
+    {
+      "corruption_type": "gaussian_blur",
+      "severity_level": 1,
+      "description": "Gaussian Blur (Mild r=2)",
+      "n_samples_evaluated": 100,
+      "n_samples_skipped": 0,
+      "resnet50_accuracy_pct": 65.0,
+      "resnet50_degradation_vs_clean_pct": 33.0
+    },
+    {
+      "corruption_type": "gaussian_blur",
+      "severity_level": 2,
+      "description": "Gaussian Blur (Moderate r=4)",
+      "n_samples_evaluated": 100,
+      "n_samples_skipped": 0,
+      "resnet50_accuracy_pct": 43.0,
+      "resnet50_degradation_vs_clean_pct": 55.0
+    },
+    {
+      "corruption_type": "gaussian_blur",
+      "severity_level": 3,
+      "description": "Gaussian Blur (Severe r=6)",
+      "n_samples_evaluated": 100,
+      "n_samples_skipped": 0,
+      "resnet50_accuracy_pct": 28.0,
+      "resnet50_degradation_vs_clean_pct": 70.0
+    },
+    {
+      "corruption_type": "brightness_shift",
+      "severity_level": 1,
+      "description": "Brightness (+30%)",
+      "n_samples_evaluated": 100,
+      "n_samples_skipped": 0,
+      "resnet50_accuracy_pct": 97.0,
+      "resnet50_degradation_vs_clean_pct": 1.0
+    },
+    {
+      "corruption_type": "brightness_shift",
+      "severity_level": 2,
+      "description": "Brightness (-30%)",
+      "n_samples_evaluated": 100,
+      "n_samples_skipped": 0,
+      "resnet50_accuracy_pct": 94.0,
+      "resnet50_degradation_vs_clean_pct": 4.0
+    },
+    {
+      "corruption_type": "brightness_shift",
+      "severity_level": 3,
+      "description": "Low Lighting (-60%)",
+      "n_samples_evaluated": 100,
+      "n_samples_skipped": 0,
+      "resnet50_accuracy_pct": 88.0,
+      "resnet50_degradation_vs_clean_pct": 10.0
+    },
+    {
+      "corruption_type": "jpeg_compression",
+      "severity_level": 1,
+      "description": "JPEG Compression (Q=50)",
+      "n_samples_evaluated": 100,
+      "n_samples_skipped": 0,
+      "resnet50_accuracy_pct": 96.0,
+      "resnet50_degradation_vs_clean_pct": 2.0
+    },
+    {
+      "corruption_type": "jpeg_compression",
+      "severity_level": 2,
+      "description": "JPEG Compression (Q=30)",
+      "n_samples_evaluated": 100,
+      "n_samples_skipped": 0,
+      "resnet50_accuracy_pct": 98.0,
+      "resnet50_degradation_vs_clean_pct": 0.0
+    },
+    {
+      "corruption_type": "jpeg_compression",
+      "severity_level": 3,
+      "description": "JPEG Compression (Q=10)",
+      "n_samples_evaluated": 100,
+      "n_samples_skipped": 0,
+      "resnet50_accuracy_pct": 84.0,
+      "resnet50_degradation_vs_clean_pct": 14.0
+    }
+  ]
+}

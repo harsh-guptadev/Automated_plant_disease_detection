@@ -119,8 +119,24 @@ Evaluated across 8,146 test images:
 #### Honest Analysis of OOD Detection Limitation
 The maximum softmax confidence thresholding mechanism ($\tau = 0.60$) achieved a 96.0% acceptance rate on in-distribution PlantVillage test images. However, on Tier 2 (completely non-leaf images including hands, machinery, and surfaces), the rejection rate was only 40.0% (12/30 rejected, 18/30 accepted with a mean calibrated confidence of 0.6755). Similarly, on Tier 3 (severely blurred leaf images), the rejection rate was 30.0%. This reveals a critical finding: post-hoc softmax confidence thresholding, even when temperature calibrated, remains susceptible to overconfidence on feature representations far outside the training domain. Future iterations must incorporate feature-space density estimation (e.g. Mahalanobis distance or energy-based out-of-distribution scoring) to achieve robust non-leaf rejection.
 
-### E. Robustness Stress-Testing Under Corruptions (ResNet50)
-The robustness evaluation script (`src/evaluation/robustness_eval.py`) applies three categories of real-world image corruptions to the first 100 samples of the 15% TEST split. Results for 9 corruption levels across Gaussian Blur, Brightness Shift, and JPEG Compression are saved to `results/week2/robustness_stress_test.json` and incorporated here once the evaluation run completes. **[EVALUATION RUNNING — results will be incorporated into this section upon completion]**
+### E. Robustness Stress-Testing Under Corruptions (ResNet50, n=100)
+
+Evaluated across 100 stratified TEST samples (seed=123) under three corruption families. Full results in `results/week2/robustness_stress_test.json`.
+
+| Corruption | Severity | ResNet50 Acc (%) | Degradation vs. Clean |
+|---|---|---|---|
+| Clean Baseline | — | **98.0%** | 0.0 pp |
+| Gaussian Blur | Mild (r=2) | 65.0% | −33.0 pp |
+| Gaussian Blur | Moderate (r=4) | 43.0% | −55.0 pp |
+| Gaussian Blur | Severe (r=6) | 28.0% | **−70.0 pp** |
+| Brightness (+30%) | Level 1 | 97.0% | −1.0 pp |
+| Brightness (−30%) | Level 2 | 94.0% | −4.0 pp |
+| Low Lighting (−60%) | Level 3 | 88.0% | −10.0 pp |
+| JPEG Compression Q=50 | Level 1 | 96.0% | −2.0 pp |
+| JPEG Compression Q=30 | Level 2 | 98.0% | 0.0 pp |
+| JPEG Compression Q=10 | Level 3 | 84.0% | −14.0 pp |
+
+**Key Finding**: Gaussian blur is the dominant failure mode, reducing accuracy by up to **70 percentage points** at severe blur (r=6). This is significant for field deployment where camera motion blur or rain interference can occur. Brightness and JPEG compression exhibit far greater robustness (≤14 pp degradation). This points to future work: Gaussian blur augmentation during training or a blur-detection pre-filter before inference.
 
 ### F. Grounding Ablation Study
 An 18-query benchmark was evaluated comparing two strategies on disease-keyed knowledge base queries:
