@@ -29,6 +29,8 @@ CLASSES = [
 def find_dataset_root():
     """Finds PlantVillage dataset directory downloaded by kagglehub or present locally."""
     possible_paths = [
+        os.path.expanduser("~/.cache/kagglehub/datasets/abdallahalidev/plantvillage-dataset/versions/3/plantvillage dataset/color"),
+        os.path.expanduser("~/.cache/kagglehub/datasets/abdallahalidev/plantvillage-dataset/versions/3/color"),
         os.path.expanduser("~/.cache/kagglehub/datasets/abdallahalidev/plantvillage-dataset/versions/1/plantvillage dataset/color"),
         os.path.expanduser("~/.cache/kagglehub/datasets/abdallahalidev/plantvillage-dataset/versions/1/color"),
         "data/plantvillage/color",
