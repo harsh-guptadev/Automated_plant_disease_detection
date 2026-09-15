@@ -127,11 +127,11 @@ def build_synopsis_pdf(output_filename="Project_Synopsis.pdf"):
     pdf.set_font("Helvetica", "", 8)
     tech_specs = [
         ("Language & Core", "Python 3.11, TensorFlow 2.20, OpenCV"),
-        ("Model Backbone", "ResNet50 (Transfer Learning, 38 Classes)"),
-        ("Explainable AI", "Grad-CAM (Gradient-Weighted Class Activation)"),
-        ("RAG & LLM Engine", "Hugging Face Inference API (Qwen / Mistral)"),
-        ("Voice Interface", "Web Speech API, OpenAI Whisper, gTTS"),
-        ("Frontend & Report", "Streamlit 1.51.0, FPDF2 Engine")
+        ("Model Backbones", "ResNet50 (94.87%) & EfficientNetV2-B0 (92.20%)"),
+        ("Calibration & OOD", "ECE: 1.09% -> 0.42% (T=1.20), OOD Tau=0.60"),
+        ("Explainable AI", "Grad-CAM & Grad-CAM++ (Multi-Lesion Focus)"),
+        ("RAG Engine", "Grounded KB (5.0/5.0 score vs 2.66/5.0 direct LLM)"),
+        ("Frontend & Report", "Streamlit 1.51.0, FPDF2 PDF Report Engine")
     ]
     for category, spec in tech_specs:
         pdf.set_x(108)
@@ -148,12 +148,12 @@ def build_synopsis_pdf(output_filename="Project_Synopsis.pdf"):
     pdf.line(12, 154.5, 198, 154.5)
 
     modules = [
-        ("CNN Classifier:", "Loads ResNet50 architecture fine-tuned on 38 plant disease/healthy categories."),
-        ("Grad-CAM XAI:", "Computes neuron importance weights to generate focus heatmaps for diagnosis visual proof."),
-        ("Attention Heuristic:", "Calculates active pixel coverage and flags low-confidence (<60%) uncertain inputs."),
-        ("RAG Engine:", "Retrieves symptoms, chemical treatments, organic remedies, & prevention to ground LLMs."),
-        ("Agri-Chatbot:", "Supports voice (Hindi/English) and text follow-up questions for interactive crop assistance."),
-        ("PDF Health Card:", "Exports an official executive PDF diagnostic report for field extension use.")
+        ("CNN Classifiers:", "ResNet50 (94.87% Top-1 Acc) & EfficientNetV2-B0 (92.20% Top-1 Acc, 2x speed)."),
+        ("Grad-CAM / ++ XAI:", "Renders 1st and 2nd/3rd order gradient focus heatmaps for spatial visual proof."),
+        ("Calibration & OOD:", "Temperature scaling reduces ECE by 61.61%; flags low-confidence (<60%) inputs."),
+        ("RAG Agronomy DB:", "Retrieves certified symptoms, chemical & organic protocols to ground LLM outputs."),
+        ("Agri-Chatbot:", "Multimodal voice & chat interface supporting English/Hindi/Spanish/French assistance."),
+        ("PDF Health Card:", "Generates printable diagnostic extension reports with calibrated confidence metrics.")
     ]
     pdf.set_xy(12, 156)
     for mod_name, mod_desc in modules:

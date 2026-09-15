@@ -22,6 +22,7 @@ from pdf_generator import create_pdf_report
 from voice_utils import render_voice_input, speak_response
 from evaluation.batch_processor import process_batch_images
 from models.efficientnet_benchmark import benchmark_single_image, get_model_specs
+from explainability.gradcam_pp import make_gradcam_pp_heatmap
 
 # Page setup
 st.set_page_config(
@@ -128,6 +129,23 @@ with st.sidebar:
     st.caption("RAG-Powered Agritech Diagnostic System")
     st.divider()
     
+    st.markdown("##### 🧠 Select Model Backbone")
+    selected_model_name = st.radio(
+        "Classification Architecture",
+        ["ResNet50 Baseline (94.87% Acc)", "EfficientNetV2-B0 (92.20% Acc, 2x Speed)"],
+        index=0,
+        help="Switch between ResNet50 (25.6M params) and EfficientNetV2-B0 (5.9M params)"
+    )
+
+    st.markdown("##### 🔍 Select XAI Heatmap Method")
+    selected_xai_method = st.radio(
+        "Explainable AI Algorithm",
+        ["Standard Grad-CAM", "Grad-CAM++ (Multi-Lesion)"],
+        index=0,
+        help="Grad-CAM++ calculates 2nd/3rd order gradients for multi-spot lesion attribution"
+    )
+    
+    st.divider()
     st.markdown("##### 🌍 Select Preferred Language")
     language = st.selectbox("Language", ["English", "Hindi", "Spanish", "French"], index=0)
     
@@ -139,21 +157,22 @@ with st.sidebar:
         st.session_state["HF_TOKEN"] = user_hf_key
         
     st.divider()
-    st.markdown("""
-    **System Features:**
-    - 🧠 **ResNet50 Classifier** (38 Classes)
-    - 📚 **RAG Agronomist Engine** (Zero-Hallucination)
-    - 📊 **Grad-CAM Infection Severity Estimator**
-    - 💬 **Interactive Crop Health Chatbot**
-    - 📄 **Downloadable PDF Diagnostic Report**
-    """)
+    with st.expander("📊 Model Reliability & Calibration Metrics"):
+        st.markdown("""
+        **Verification Gate Audit Results:**
+        - **ResNet50 Accuracy**: 94.87% (Macro F1: 0.9335)
+        - **EfficientNetV2 Accuracy**: 92.20% (Macro F1: 0.8851)
+        - **ECE Reduction**: 1.09% → 0.42% (Temp T=1.1959)
+        - **OOD Safety Threshold**: $\\tau = 0.60$
+        - **Grad-CAM++**: 2nd/3rd order partial gradient weighting
+        """)
 
 # Hero Header
 st.markdown("""
     <div class="hero-container">
         <div class="hero-title">Automated Plant Disease Detection & RAG Agronomist</div>
         <div class="hero-subtitle">
-            Upload a plant leaf image for instant CNN classification, Grad-CAM infection severity estimation, RAG-certified treatment protocols, and an interactive AI agronomist chatbot.
+            Upload a plant leaf image for instant CNN classification, Grad-CAM/Grad-CAM++ infection severity estimation, RAG-certified treatment protocols, and an interactive AI agronomist chatbot.
         </div>
     </div>
 """, unsafe_allow_html=True)
@@ -210,7 +229,7 @@ class_descriptions = {
 }
 
 @st.cache_resource
-def load_model():
+def load_resnet_model():
     inputs = Input(shape=(224, 224, 3))
     resnet_base = ResNet50(weights='imagenet', include_top=False, input_tensor=(inputs))
     resnet_base.trainable = False
@@ -224,9 +243,34 @@ def load_model():
     model = models.Model(inputs, outputs)
     weights = np.load("resnet_weights.npz", allow_pickle=True)
     model.set_weights([weights[key] for key in weights])
-    return model
+    return model, "conv5_block3_out"
 
-model = load_model()
+@st.cache_resource
+def load_efficientnet_model():
+    from tensorflow.keras.applications import EfficientNetV2B0
+    inputs = Input(shape=(224, 224, 3))
+    effnet_base = EfficientNetV2B0(weights='imagenet', include_top=False, input_tensor=inputs)
+    effnet_base.trainable = False
+    x = layers.GlobalAveragePooling2D(name="effnet_gap")(effnet_base.output)
+    x = layers.Dense(256, activation='relu', name="effnet_dense")(x)
+    x = layers.Dropout(0.3, name="effnet_dropout")(x)
+    outputs = layers.Dense(len(classes), activation='softmax', name="effnet_predictions")(x)
+    model = models.Model(inputs, outputs)
+    weights_path = "results/week2/efficientnetv2_weights.weights.h5"
+    if os.path.exists(weights_path):
+        model.load_weights(weights_path)
+    # Find last convolutional layer in EfficientNetV2
+    last_conv = "top_activation"
+    for layer in reversed(model.layers):
+        if isinstance(layer, (layers.Conv2D, layers.DepthwiseConv2D)) or "conv" in layer.name or "top_activation" in layer.name:
+            last_conv = layer.name
+            break
+    return model, last_conv
+
+if "EfficientNet" in selected_model_name:
+    model, last_conv_layer_name = load_efficientnet_model()
+else:
+    model, last_conv_layer_name = load_resnet_model()
 
 # Image Upload Card
 st.markdown('<div class="glass-card">', unsafe_allow_html=True)
@@ -237,20 +281,27 @@ upload_files = st.file_uploader(
 )
 st.markdown('</div>', unsafe_allow_html=True)
 
-# Helper function for Grad-CAM Heatmap calculation
-def make_gradcam_heatmap(img_array, model, last_conv_layer_name='conv5_block3_out'):
-    last_conv_layer = model.get_layer(last_conv_layer_name)
-    grad_model = tf.keras.models.Model([model.inputs], [last_conv_layer.output, model.output])
-    with tf.GradientTape() as tape:
-        conv_outputs, predictions = grad_model(img_array)
-        class_idx = tf.argmax(predictions[0])
-        loss = predictions[:, class_idx]
-    grads = tape.gradient(loss, conv_outputs)
-    pooled_grads = tf.reduce_mean(grads, axis=(0, 1, 2))
-    conv_outputs = conv_outputs[0]
-    heatmap = tf.reduce_sum(tf.multiply(pooled_grads, conv_outputs), axis=-1)
-    heatmap = np.maximum(heatmap, 0) / (np.max(heatmap) + 1e-8)
-    return heatmap
+# Helper function for Grad-CAM / Grad-CAM++ Heatmap calculation
+def compute_selected_heatmap(img_array, model, target_layer=None):
+    layer_name = target_layer if target_layer else last_conv_layer_name
+    if "Grad-CAM++" in selected_xai_method:
+        return make_gradcam_pp_heatmap(img_array, model, last_conv_layer_name=layer_name)
+    else:
+        last_conv_layer = model.get_layer(layer_name)
+        grad_model = tf.keras.models.Model([model.inputs], [last_conv_layer.output, model.output])
+        with tf.GradientTape() as tape:
+            conv_outputs, predictions = grad_model(img_array)
+            class_idx = tf.argmax(predictions[0])
+            loss = predictions[:, class_idx]
+        grads = tape.gradient(loss, conv_outputs)
+        pooled_grads = tf.reduce_mean(grads, axis=(0, 1, 2))
+        conv_outputs = conv_outputs[0]
+        heatmap = tf.reduce_sum(tf.multiply(pooled_grads, conv_outputs), axis=-1)
+        heatmap = np.maximum(heatmap, 0) / (np.max(heatmap) + 1e-8)
+        return heatmap
+
+def make_gradcam_heatmap(img_array, model, last_conv_layer_name=None):
+    return compute_selected_heatmap(img_array, model, target_layer=last_conv_layer_name)
 
 if upload_files and len(upload_files) > 1:
     # ──────────────────────────────────────────────────────────────────────────
