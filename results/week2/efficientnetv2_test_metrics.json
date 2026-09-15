@@ -1,0 +1,14 @@
+{
+  "model_name": "EfficientNetV2-B0",
+  "parameters": 5919310,
+  "parameters_formatted": "5.9M",
+  "top1_accuracy": 0.922,
+  "macro_precision": 0.9149,
+  "macro_recall": 0.8793,
+  "macro_f1_score": 0.8851,
+  "weighted_precision": 0.9264,
+  "weighted_recall": 0.922,
+  "weighted_f1_score": 0.9194,
+  "avg_inference_latency_ms": 15.22,
+  "training_time_seconds": 188.94
+}

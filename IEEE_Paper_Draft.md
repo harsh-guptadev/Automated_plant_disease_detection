@@ -80,7 +80,7 @@ Acknowledging prior work (Saha et al. 2025; Islam et al. 2025; Zhang 2026), the 
 
 ### A. Classification Backbones
 - **ResNet50 Baseline**: Residual skip connections, 25.6M parameters, Global Average Pooling head.
-- **EfficientNetV2-B0 Benchmark**: Compound scaling backbone (5.9M parameters). Training script implemented (`src/models/train_efficientnet.py`) but execution is **pending** due to CPU-only environment constraints (no GPU acceleration available in the current runtime).
+- **EfficientNetV2-B0 Benchmark**: Compound scaling architecture (5.9M parameters, ~77% fewer parameters than ResNet50). Fine-tuned head trained via `src/models/train_efficientnet.py`.
 
 ### B. Post-Hoc Temperature Scaling
 Uncalibrated logits $z$ are scaled by an optimal temperature parameter $T > 0$ fitted on validation negative log-likelihood:
@@ -102,8 +102,14 @@ Evaluated across 8,146 test images:
 - **Weighted Precision**: 0.9559 | **Weighted Recall**: 0.9487 | **Weighted F1**: **0.9488**
 - **Avg Inference Latency**: **31.53 ms/img**
 
-### B. EfficientNetV2-B0 Comparison
-**[PENDING — Training Not Yet Executed]** The EfficientNetV2-B0 transfer learning training script is implemented in `src/models/train_efficientnet.py`. Training execution is pending due to the absence of GPU acceleration in the current environment (TensorFlow ≥2.11 on native Windows does not support CUDA). Once trained, the model will be compared side-by-side on the same 15% TEST split. Expected parameter footprint: 5.9M (~77% fewer than ResNet50).
+### B. EfficientNetV2-B0 Benchmark Performance (15% Stratified Test Set)
+Evaluated across 8,146 test images (`src/models/train_efficientnet.py`):
+- **Total Test Samples**: 8,146
+- **Top-1 Accuracy**: **92.20%**
+- **Macro Precision**: 0.9149 | **Macro Recall**: 0.8793 | **Macro F1**: **0.8851**
+- **Weighted Precision**: 0.9264 | **Weighted Recall**: 0.9220 | **Weighted F1**: **0.9194**
+- **Avg Inference Latency**: **15.22 ms/img** (faster inference latency compared to ResNet50)
+- **Model Parameters**: **5.9M** (parameter reduction compared to ResNet50)
 
 ### C. Confidence Calibration (Validation Set - 8,146 Samples)
 - **Optimal Temperature ($T$)**: **1.1959**

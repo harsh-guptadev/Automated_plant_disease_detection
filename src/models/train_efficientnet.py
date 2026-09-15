@@ -150,7 +150,7 @@ def train_and_evaluate_efficientnet(
     effnet_metrics = {
         "model_name": "EfficientNetV2-B0",
         "parameters": 5919310,
-        "parameter_formatted": "5.9M",
+        "parameters_formatted": "5.9M",
         "top1_accuracy": round(acc, 4),
         "macro_precision": round(float(macro_p), 4),
         "macro_recall": round(float(macro_r), 4),

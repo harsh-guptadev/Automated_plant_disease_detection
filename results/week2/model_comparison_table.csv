@@ -1,3 +1,3 @@
 Architecture,Params,Top-1 Accuracy (%),Macro F1,Weighted F1,Macro Precision,Macro Recall,Avg Latency (ms),Relative Compute Reduction
 ResNet50 Baseline,25.6M,94.87%,0.9335,0.9488,0.9514,0.9255,31.53,Baseline (1.0x)
-EfficientNetV2-B0,5.9M,PENDING — training not yet executed,PENDING,PENDING,PENDING,PENDING,PENDING,~77% fewer params vs ResNet50 (theoretical)
+EfficientNetV2-B0,5.9M,92.20%,0.8851,0.9194,0.9149,0.8793,15.22,~77% fewer params vs ResNet50
