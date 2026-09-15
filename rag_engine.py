@@ -22,13 +22,23 @@ def retrieve_disease_context(predicted_class: str) -> dict:
     }
     return kb.get(predicted_class, default_info)
 
-def generate_rag_care_advice(predicted_disease_readable: str, predicted_class: str, hf_token: str, language: str = "English") -> str:
+def generate_rag_care_advice(predicted_disease_readable: str, predicted_class: str, hf_token: str, language: str = "English", is_uncertain: bool = False, confidence_pct: float = 100.0) -> str:
     """Uses retrieved RAG context + Hugging Face LLM to generate zero-hallucination care steps."""
     context = retrieve_disease_context(predicted_class)
     
+    uncertainty_note = ""
+    if is_uncertain:
+        uncertainty_note = f"""
+        ⚠️ UNCERTAINTY NOTICE (Calibrated Confidence: {confidence_pct:.1f}%):
+        The model is UNCERTAIN about this prediction (confidence below 60.0% threshold).
+        You MUST include a prominent disclaimer at the VERY BEGINNING of your response advising the farmer:
+        '⚠️ Low Diagnostic Confidence: Image does not match a recognized disease pattern with high certainty. Please consult a local certified agricultural extension specialist or agronomist before applying any chemical treatment.'
+        """
+
     prompt = f"""
     You are an expert plant pathologist and agronomist. 
     A deep learning model identified the crop disease as: **{predicted_disease_readable}**.
+    {uncertainty_note}
 
     --- VERIFIED AGRONOMY KNOWLEDGE BASE (STRICT SOURCE DATA) ---
     - Typical Symptoms: {context.get('symptoms')}
@@ -40,7 +50,7 @@ def generate_rag_care_advice(predicted_disease_readable: str, predicted_class: s
     INSTRUCTIONS:
     - Respond strictly using the provided agronomy knowledge base above.
     - Output language: {language}.
-    - Format response with 4 clean sections: 
+    - Format response with clean sections: 
       1. 🔍 Disease Diagnosis Summary
       2. 🧪 Chemical Treatment & Dosage
       3. 🌿 Organic / Natural Remedies

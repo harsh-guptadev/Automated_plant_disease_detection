@@ -349,11 +349,33 @@ elif upload_files and len(upload_files) == 1:
     image_batch = np.expand_dims(image_array, axis=0)
     image_batch_preprocessed = preprocess_input(image_batch.copy())
     
-    predictions = model.predict(image_batch_preprocessed)
-    confidence = float(np.max(predictions))
-    predicted_class = classes[np.argmax(predictions)]
+    # ── Temperature Scaled Calibrated Inference ──
+    temp_scale = 1.62
+    temp_json_path = os.path.join("results", "week1", "temperature_scale.json")
+    if os.path.exists(temp_json_path):
+        try:
+            with open(temp_json_path, "r") as tf_file:
+                temp_scale = json.load(tf_file).get("optimal_temperature", 1.62)
+        except Exception:
+            pass
+
+    # Extract features before softmax to apply temperature T
+    feat_extractor = tf.keras.models.Model(inputs=model.input, outputs=model.get_layer("predictions").input)
+    out_dense = model.get_layer("predictions")
+    weights, biases = out_dense.get_weights()
+    feats = feat_extractor.predict(image_batch_preprocessed, verbose=0)
+    logits = np.dot(feats, weights) + biases
+    
+    # Softmax with temperature scaling T
+    scaled_logits = logits / temp_scale
+    exps = np.exp(scaled_logits - np.max(scaled_logits, axis=-1, keepdims=True))
+    calibrated_probs = (exps / np.sum(exps, axis=-1, keepdims=True))[0]
+
+    confidence = float(np.max(calibrated_probs))
+    predicted_class = classes[np.argmax(calibrated_probs)]
     readable_prediction = class_descriptions.get(predicted_class, predicted_class)
     is_healthy = "healthy" in readable_prediction.lower()
+    is_uncertain = confidence < 0.60
 
     heatmap = make_gradcam_heatmap(image_batch_preprocessed, model)
     severity_metrics = estimate_disease_severity(heatmap, confidence=confidence)
@@ -366,14 +388,19 @@ elif upload_files and len(upload_files) == 1:
     superimposed_img = cv2.addWeighted(img_cv, 0.6, heatmap_color, 0.4, 0)
     superimposed_img_rgb = cv2.cvtColor(superimposed_img, cv2.COLOR_BGR2RGB)
 
-    # Low Confidence / Uncertainty Safety Guardrail
-    if confidence < 0.60:
-        st.warning("⚠️ **Low Prediction Confidence**: Model confidence is below 60%. Please upload a clearer, well-lit leaf image or consult a professional agronomist before taking chemical action.")
+    # Low Confidence / Uncertainty Out-of-Distribution Guardrail
+    if is_uncertain:
+        st.warning(
+            f"⚠️ **Low Diagnostic Confidence / OOD Warning (Calibrated Confidence: {confidence * 100:.1f}%)**: "
+            "Confidence is below the 60.0% reliability threshold. "
+            "This image does not match a recognized plant disease pattern confidently. "
+            "**Expert agronomist review is strongly recommended before taking chemical action.**"
+        )
 
     # Diagnostic Header Metrics
-    badge_class = "badge-healthy" if is_healthy else "badge-diseased"
-    status_icon = "✅" if is_healthy else "⚠️"
-    status_text = "HEALTHY CROP" if is_healthy else "DISEASE IDENTIFICATION SUPPORT"
+    badge_class = "badge-healthy" if is_healthy else ("badge-diseased" if not is_uncertain else "badge-healthy")
+    status_icon = "✅" if is_healthy else ("⚠️" if not is_uncertain else "❓")
+    status_text = "HEALTHY CROP" if is_healthy else ("DISEASE DETECTED" if not is_uncertain else "UNCERTAIN DIAGNOSIS (OOD)")
 
     col1, col2, col3 = st.columns([2, 1, 1])
     with col1:
@@ -438,7 +465,10 @@ elif upload_files and len(upload_files) == 1:
             if st.button("🤖 Generate Knowledge-Grounded Care Protocol (LLM)", type="primary"):
                 with st.spinner(f"Generating decision-support protocol in {language}..."):
                     try:
-                        advice = generate_rag_care_advice(readable_prediction, predicted_class, HF_TOKEN, language)
+                        advice = generate_rag_care_advice(
+                            readable_prediction, predicted_class, HF_TOKEN, language,
+                            is_uncertain=is_uncertain, confidence_pct=confidence*100.0
+                        )
                         st.markdown(f'''
                             <div class="glass-card">
                                 <h3 style="color:#34d399; margin-top:0;">📋 Evidence-Grounded Recommendations</h3>
