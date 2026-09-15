@@ -143,11 +143,69 @@ def build_beginner_guide_pdf(output_filename="AgriVision_Beginner_Guide.pdf"):
         pdf.multi_cell(186, 4.3, sanitize_pdf_text(desc))
         pdf.ln(2.5)
 
-    # ── Section 3: Empirical Benchmark Results ──
+    # ── Section 3: How We Built This Project From Scratch (Developer Journey) ──
     pdf.add_page()
     pdf.set_font("Helvetica", "B", 14)
     pdf.set_text_color(16, 44, 34)
-    pdf.cell(0, 8, sanitize_pdf_text("3. Key Benchmark Results (Proven by Data)"), ln=True)
+    pdf.cell(0, 8, sanitize_pdf_text("3. How We Built This Project From Scratch (Developer Creation Journey)"), ln=True)
+    pdf.set_draw_color(52, 211, 153)
+    pdf.line(12, pdf.get_y(), 198, pdf.get_y())
+    pdf.ln(4)
+
+    creation_phases = [
+        ("Phase 1: Dataset & Data Split Engineering",
+         "We started with 54,305 PlantVillage leaf images across 38 categories.\n"
+         "  * Created a 70/15/15 stratified split (37,998 Train / 8,161 Validation / 8,146 Test images) using fixed seed=123.\n"
+         "  * Saved exact split metadata in data_splits/ metadata files to ensure reproducible research.\n"
+         "  * Resized all input images to 224x224 RGB and normalized pixel values."),
+
+        ("Phase 2: Building & Training Deep Learning Models",
+         "We used Transfer Learning with pre-trained ImageNet weights:\n"
+         "  * ResNet50: Froze convolutional base, added Global Average Pooling (GAP), Dense(256, ReLU), Dropout(0.4), and Dense(38, Softmax).\n"
+         "    Trained with Adam optimizer (lr=0.001) and Categorical Cross-Entropy Loss -> Achieved 94.87% Top-1 Accuracy.\n"
+         "  * EfficientNetV2-B0: Fine-tuned lightweight NAS compound scaling backbone (5.9M params) -> Achieved 92.20% Accuracy (15.22ms latency)."),
+
+        ("Phase 3: Mathematical Calibration (Temperature Scaling)",
+         "Raw Softmax probabilities are overconfident (logits z produce uncalibrated probabilities).\n"
+         "  * Implemented Temperature Scaling: p_hat = Softmax(z / T).\n"
+         "  * Optimized temperature parameter T = 1.1959 on validation set NLL loss.\n"
+         "  * Result: Reduced Expected Calibration Error (ECE) from 1.09% to 0.42% (61.61% relative reduction)."),
+
+        ("Phase 4: Out-of-Distribution (OOD) Safety Threshold",
+         "Built a safety guardrail threshold tau = 0.60.\n"
+         "  * If max calibrated confidence < 0.60 (e.g. non-leaf image, hand, tractor, or blurry leaf), prediction is rejected as UNCERTAIN.\n"
+         "  * Tested on 30 non-leaf images (Tier 2) and 30 blurred leaves (Tier 3) to prevent forced false diagnoses."),
+
+        ("Phase 5: Explainable AI Heatmap Implementation",
+         "Implemented two XAI algorithms in src/explainability/:\n"
+         "  * Standard Grad-CAM: Computes first-order gradients w.r.t. conv5_block3_out feature maps to highlight primary focus.\n"
+         "  * Grad-CAM++: Computes 2nd & 3rd order partial gradients (alpha_ij) for accurate multi-spot lesion attribution."),
+
+        ("Phase 6: Knowledge Base & Grounded RAG Engine",
+         "Created a 38-class verified agronomist JSON knowledge base (rag_knowledge_base.json) containing certified symptoms, chemical active ingredients, organic remedies, and prevention strategies.\n"
+         "  * RAG Engine (rag_engine.py): When a disease is diagnosed, retrieves exact factual context and injects it into LLMs (Qwen/Mistral).\n"
+         "  * Grounding Ablation: Human rating pass proved Grounded RAG achieves 5.0/5.0 Likert score (0% hallucination) vs 2.66/5.0 for direct LLMs."),
+
+        ("Phase 7: Full Stack Web App & Verification Gate",
+         "  * Web UI (App.py): Built Streamlit dashboard with custom CSS, dual model selector, dual XAI selector, and voice support.\n"
+         "  * Report Engine (pdf_generator.py): Built printable diagnostic card generator using FPDF2.\n"
+         "  * Verification Gate (verify_claims.py): Automated script that audits all 85 numeric claims in paper against JSON results files.")
+    ]
+
+    for title, desc in creation_phases:
+        pdf.set_font("Helvetica", "B", 9.8)
+        pdf.set_text_color(20, 83, 45)
+        pdf.cell(0, 5, sanitize_pdf_text(title), ln=True)
+        pdf.set_font("Helvetica", "", 8.5)
+        pdf.set_text_color(51, 65, 85)
+        pdf.multi_cell(186, 4.1, sanitize_pdf_text(desc))
+        pdf.ln(2.2)
+
+    # ── Section 4: Key Benchmark Results ──
+    pdf.add_page()
+    pdf.set_font("Helvetica", "B", 14)
+    pdf.set_text_color(16, 44, 34)
+    pdf.cell(0, 8, sanitize_pdf_text("4. Key Benchmark Results (Proven by Data)"), ln=True)
     pdf.line(12, pdf.get_y(), 198, pdf.get_y())
     pdf.ln(4)
 
