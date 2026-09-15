@@ -157,12 +157,13 @@ def fit_temperature_scaling(val_split_json="data_splits/val_split.json", output_
     plt.close()
 
     # Save calibration metadata JSON
+    rel_reduction = ((ece_before - ece_after) / ece_before) * 100.0 if ece_before > 0 else 0.0
     calibration_meta = {
         "model_name": "ResNet50 Baseline",
         "optimal_temperature": round(optimal_temp, 4),
         "ece_uncalibrated": round(ece_before, 4),
         "ece_calibrated": round(ece_after, 4),
-        "ece_improvement_percent": round((ece_before - ece_after) * 100.0, 2),
+        "ece_relative_reduction_pct": round(rel_reduction, 2),
         "val_sample_count": len(val_labels),
         "n_bins": 15
     }

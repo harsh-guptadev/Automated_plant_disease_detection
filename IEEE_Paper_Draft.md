@@ -7,7 +7,7 @@
 ---
 
 ## Abstract
-Deep Convolutional Neural Networks (CNNs) have achieved impressive top-1 accuracy in automated plant disease identification. However, real-world field deployment remains constrained by three fundamental vulnerabilities: (1) uncalibrated model overconfidence on out-of-distribution (OOD) or non-leaf imagery, (2) opaque black-box predictions without visual spatial justification, and (3) LLM hallucinations when generating chemical treatment advice. This paper presents an integrated agronomic decision-support framework that combines ResNet50 classification, post-hoc temperature scaling confidence calibration, an uncertainty-aware OOD rejection mechanism, Grad-CAM visual explainability, and a Retrieval-Augmented Generation (RAG) agronomy engine. Evaluated on a 70/15/15 stratified split of 54,305 PlantVillage images (fixed seed=123), our ResNet50 baseline achieves 94.87% top-1 accuracy (0.9335 macro F1), while temperature scaling reduces Expected Calibration Error (ECE) from 1.09% to 0.42% (a 61.47% relative reduction). An empirical evaluation of calibrated confidence thresholding (tau=0.60) reveals a 96.0% acceptance rate on in-distribution images, but highlights an important limitation with a 40.0% rejection rate on non-leaf images and 30.0% on severely blurred inputs.
+Deep Convolutional Neural Networks (CNNs) have achieved impressive top-1 accuracy in automated plant disease identification. However, real-world field deployment remains constrained by three fundamental vulnerabilities: (1) uncalibrated model overconfidence on out-of-distribution (OOD) or non-leaf imagery, (2) opaque black-box predictions without visual spatial justification, and (3) LLM hallucinations when generating chemical treatment advice. This paper presents an integrated agronomic decision-support framework that combines ResNet50 classification, post-hoc temperature scaling confidence calibration, an uncertainty-aware OOD rejection mechanism, Grad-CAM visual explainability, and a Retrieval-Augmented Generation (RAG) agronomy engine grounded in a curated disease knowledge base. Evaluated on a 70/15/15 stratified split of 54,305 PlantVillage images (fixed seed=123), our ResNet50 baseline achieves 94.87% top-1 accuracy (0.9335 macro F1), while temperature scaling reduces Expected Calibration Error (ECE) from 1.09% to 0.42% (a 61.61% relative reduction). An empirical evaluation of calibrated confidence thresholding (tau=0.60) reveals a 96.0% acceptance rate on in-distribution images, but highlights an important limitation with a 40.0% rejection rate on non-leaf images and 30.0% on severely blurred inputs.
 
 **Index Terms:** Plant Pathology, Convolutional Neural Networks, Temperature Scaling, Out-of-Distribution Rejection, Explainable AI, Retrieval-Augmented Generation.
 
@@ -18,7 +18,7 @@ Plant diseases threaten global agricultural yields, crop productivity, and food 
 
 While recent deep learning models excel at supervised classification, standard Softmax outputs do not correspond to true posterior probabilities. Uncalibrated networks produce high confidence scores even when presented with corrupted or non-target images (e.g., human hands, machinery, soil). Additionally, when generative AI models are prompted directly for crop treatment advice, they frequently hallucinate chemical dosages or unverified remedies, creating severe agricultural hazards.
 
-This work addresses these challenges by introducing a reliable, calibrated, and explainable decision-support system paired with zero-hallucination RAG agronomic recommendations.
+This work addresses these challenges by introducing a reliable, calibrated, and explainable decision-support system paired with knowledge-grounded RAG agronomic recommendations. A grounding ablation study (currently in preparation) will quantitatively compare knowledge-base-grounded responses against direct LLM generation to characterize factual alignment.
 
 ---
 
@@ -80,7 +80,7 @@ Acknowledging prior work (Saha et al. 2025; Islam et al. 2025; Zhang 2026), the 
 
 ### A. Classification Backbones
 - **ResNet50 Baseline**: Residual skip connections, 25.6M parameters, Global Average Pooling head.
-- **EfficientNetV2-B0 Benchmark**: Compound scaling backbone (5.9M parameters). Training script implemented (`src/models/train_efficientnet.py`) but training execution is **pending** due to CPU-only environment constraints (no GPU acceleration on native Windows TF≥2.11).
+- **EfficientNetV2-B0 Benchmark**: Compound scaling backbone (5.9M parameters). Training script implemented (`src/models/train_efficientnet.py`) but execution is **pending** due to CPU-only environment constraints (no GPU acceleration available in the current runtime).
 
 ### B. Post-Hoc Temperature Scaling
 Uncalibrated logits $z$ are scaled by an optimal temperature parameter $T > 0$ fitted on validation negative log-likelihood:
@@ -109,7 +109,7 @@ Evaluated across 8,146 test images:
 - **Optimal Temperature ($T$)**: **1.1959**
 - **Uncalibrated ECE ($T=1.00$)**: **1.09%** (0.0109)
 - **Calibrated ECE ($T=1.1959$)**: **0.42%** (0.0042)
-- **Relative ECE Reduction**: **61.47%**
+- **Relative ECE Reduction**: **61.61%**
 
 ### D. Out-of-Distribution (OOD) Rejection Evaluation ($\tau = 0.60, T=1.1959$)
 - **Tier 1 (PlantVillage Test Set)**: **96.0% Acceptance Rate** (96/100 accepted)
@@ -136,13 +136,14 @@ Evaluated across 100 stratified TEST samples (seed=123) under three corruption f
 | JPEG Compression Q=30 | Level 2 | 98.0% | 0.0 pp |
 | JPEG Compression Q=10 | Level 3 | 84.0% | −14.0 pp |
 
-**Key Finding**: Gaussian blur is the dominant failure mode, reducing accuracy by up to **70 percentage points** at severe blur (r=6). This is significant for field deployment where camera motion blur or rain interference can occur. Brightness and JPEG compression exhibit far greater robustness (≤14 pp degradation). This points to future work: Gaussian blur augmentation during training or a blur-detection pre-filter before inference.
+**Key Finding**: Gaussian blur is the dominant failure mode, reducing accuracy by up to **70 percentage points** at severe blur (r=6). This is significant for field deployment where camera motion blur or rain interference can occur. Brightness and JPEG compression exhibit far greater robustness (at most 14 pp degradation). Future work: Gaussian blur augmentation during training or a blur-detection pre-filter.
 
 ### F. Grounding Ablation Study
-An 18-query benchmark was evaluated comparing two strategies on disease-keyed knowledge base queries:
-- **Strategy A (Grounded RAG)**: 100.0% factual accuracy, 0.0% hallucination rate, mean human rating 5.0/5.
-- **Strategy B (Direct LLM Prompting)**: 66.7% factual accuracy, **33.3% hallucination rate**, mean human rating 4.17/5.
-This empirically demonstrates that grounding LLM responses in the curated knowledge base (`rag_knowledge_base.json`) eliminates hallucinated chemical dosages and unverified remedies present in direct LLM generation. Full per-item results are saved in `results/week2/grounding_ablation_results.json`.
+**[PENDING — Human Evaluation Not Yet Executed]** The grounding ablation study script (`src/evaluation/grounding_ablation.py`) is implemented and defines 18 benchmark disease/question pairs. However, the study requires a genuine human rater pass by a team member — with real independent responses from both a grounded RAG call and a direct LLM call, rated for factual alignment and hallucination presence. The current script generates only mechanically-assigned ratings (every third query flagged regardless of content) and cannot substitute for this evaluation. Results will be reported in `results/week2/grounding_ablation_results.json` once the genuine human evaluation is complete.
+
+### G. Grad-CAM++ Explainability Comparison
+
+We evaluated Grad-CAM++ (`src/explainability/gradcam_pp.py`), which incorporates second- and third-order partial gradients to weight feature map activations ($\alpha^{kc}_{ij}$). A qualitative comparison across test leaf samples was generated and saved to `results/week3/xai_comparison.png`. While standard Grad-CAM tends to produce a single diffuse heat energy region centered on the primary visual feature, Grad-CAM++ captures multiple fine-grained lesion focal points on the leaf blade with improved spatial boundary resolution. In cases where higher-order gradients vanish (e.g. homogenous region activations), the implementation gracefully falls back to first-order Grad-CAM weighting to maintain robust visualization outputs.
 
 ---
 

@@ -1,6 +1,8 @@
 {
   "model_name": "ResNet50 Baseline",
-  "evaluation_split": "TEST (15% stratified, seed=123)",
+  "parameters": 25636710,
+  "parameters_formatted": "25.6M",
+  "evaluation_split": "70/15/15 TEST split (15% stratified, seed=123)",
   "total_test_samples": 8146,
   "top1_accuracy": 0.9487,
   "top5_accuracy": 0.9988,
