@@ -146,12 +146,7 @@ Evaluated across 100 stratified TEST samples (seed=123) under three corruption f
 
 ### F. Grounding Ablation Study
 
-A human evaluation pass (`src/evaluation/human_rating_pass.py`) was conducted across 18 benchmark disease query pairs comparing **Strategy A (Grounded RAG)** against **Strategy B (Direct LLM Generation)**. The evaluation results are compiled in `results/week2/grounding_ablation_results.json`.
-
-- **Strategy A (Grounded RAG)**: Achieved a mean human Likert quality score of **5.00 / 5.0**, **100.0% factual alignment** with certified agronomy guidelines, and **0.0% chemical dosage hallucinations**.
-- **Strategy B (Direct LLM Generation)**: Achieved a mean human Likert quality score of **2.66 / 5.0**, **61.1% factual alignment**, and exhibited a **38.9% chemical dosage hallucination rate** (7/18 queries contained unverified active ingredient proportions or unapproved spray frequencies).
-
-This empirical ablation confirms that context-grounding via a structured agronomy knowledge base is essential to prevent unsafe agricultural recommendations.
+**[PENDING — Human Evaluation Not Yet Executed]** The grounding ablation study script (`src/evaluation/grounding_ablation.py`) is implemented and defines 18 benchmark disease/question pairs. However, the study requires a genuine human rater pass by a team member — with real independent responses from both a grounded RAG call and a direct LLM call, rated for factual alignment and hallucination presence. The current script generates only mechanically-assigned ratings (every third query flagged regardless of content) and cannot substitute for this evaluation. Results will be reported in `results/week2/grounding_ablation_results.json` once the genuine human evaluation is complete.
 
 ### G. Grad-CAM++ Explainability Comparison
 

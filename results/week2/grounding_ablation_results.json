@@ -1,22 +1,22 @@
 {
   "study_metadata": {
     "evaluation_type": "HUMAN_RATING_GROUNDING_ABLATION",
-    "rater": "Group 113 Team (Harsh Gupta, Manthan, Sumit Kumar)",
     "total_queries_evaluated": 18,
     "scoring_scale": "1.0 to 5.0 Likert Scale"
   },
   "summary_metrics": {
     "strategy_a_grounded_rag": {
-      "mean_human_score": 5.0,
-      "factual_consistency_pct": 100.0,
-      "chemical_dosage_hallucination_pct": 0.0,
+      "mean_human_score": null,
+      "factual_consistency_pct": null,
+      "chemical_dosage_hallucination_pct": null,
       "mean_kb_retrieval_coverage_pct": 100.0
     },
     "strategy_b_direct_llm": {
-      "mean_human_score": 2.66,
-      "factual_consistency_pct": 61.1,
-      "chemical_dosage_hallucination_pct": 38.9
-    }
+      "mean_human_score": null,
+      "factual_consistency_pct": null,
+      "chemical_dosage_hallucination_pct": null
+    },
+    "strategy_b_status": "PENDING \u2014 human evaluation not yet executed"
   },
   "per_item_results": [
     {
@@ -25,15 +25,15 @@
       "user_question": "What chemical fungicide or organic remedy should I apply for Apple scab?",
       "strategy_a_grounded_rag": {
         "kb_coverage_pct": 100.0,
-        "factually_consistent": true,
-        "chemical_dosage_hallucination": false,
-        "human_rating_score": 5.0,
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null,
         "response_snippet": "Diagnosis: Apple___Apple_scab\nSymptoms: Olive-green to black velvet-like spots on leaves and fruit, causing leaf drop.\nC..."
       },
       "strategy_b_direct_llm": {
-        "factually_consistent": false,
-        "chemical_dosage_hallucination": true,
-        "human_rating_score": 1.8
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null
       }
     },
     {
@@ -42,15 +42,15 @@
       "user_question": "How can I prevent Black rot from spreading in my apple orchard?",
       "strategy_a_grounded_rag": {
         "kb_coverage_pct": 100.0,
-        "factually_consistent": true,
-        "chemical_dosage_hallucination": false,
-        "human_rating_score": 5.0,
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null,
         "response_snippet": "Diagnosis: Apple___Black_rot\nSymptoms: Frog-eye spots on leaves, black rot on fruit, and reddish-brown stem cankers.\nChe..."
       },
       "strategy_b_direct_llm": {
-        "factually_consistent": true,
-        "chemical_dosage_hallucination": false,
-        "human_rating_score": 3.2
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null
       }
     },
     {
@@ -59,15 +59,15 @@
       "user_question": "What are the early visual symptoms and chemical dosages for Corn common rust?",
       "strategy_a_grounded_rag": {
         "kb_coverage_pct": 100.0,
-        "factually_consistent": true,
-        "chemical_dosage_hallucination": false,
-        "human_rating_score": 5.0,
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null,
         "response_snippet": "Diagnosis: Corn_(maize)___Common_rust_\nSymptoms: Oval to elongate powdery brick-red pustules on both upper and lower lea..."
       },
       "strategy_b_direct_llm": {
-        "factually_consistent": false,
-        "chemical_dosage_hallucination": true,
-        "human_rating_score": 1.8
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null
       }
     },
     {
@@ -76,15 +76,15 @@
       "user_question": "Is there an organic treatment protocol for Northern Leaf Blight in maize?",
       "strategy_a_grounded_rag": {
         "kb_coverage_pct": 100.0,
-        "factually_consistent": true,
-        "chemical_dosage_hallucination": false,
-        "human_rating_score": 5.0,
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null,
         "response_snippet": "Diagnosis: Corn_(maize)___Northern_Leaf_Blight\nSymptoms: Large elliptical grayish-green or tan lesions (2\u201315 cm long) on..."
       },
       "strategy_b_direct_llm": {
-        "factually_consistent": true,
-        "chemical_dosage_hallucination": false,
-        "human_rating_score": 3.2
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null
       }
     },
     {
@@ -93,15 +93,15 @@
       "user_question": "What is the recommended application timing for black rot in grapes?",
       "strategy_a_grounded_rag": {
         "kb_coverage_pct": 100.0,
-        "factually_consistent": true,
-        "chemical_dosage_hallucination": false,
-        "human_rating_score": 5.0,
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null,
         "response_snippet": "Diagnosis: Grape___Black_rot\nSymptoms: Small reddish-brown leaf spots; berries shrivel into hard black mummies.\nChemical..."
       },
       "strategy_b_direct_llm": {
-        "factually_consistent": true,
-        "chemical_dosage_hallucination": false,
-        "human_rating_score": 3.2
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null
       }
     },
     {
@@ -110,15 +110,15 @@
       "user_question": "Can Esca black measles in grapevines be cured with fungicides?",
       "strategy_a_grounded_rag": {
         "kb_coverage_pct": 100.0,
-        "factually_consistent": true,
-        "chemical_dosage_hallucination": false,
-        "human_rating_score": 5.0,
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null,
         "response_snippet": "Diagnosis: Grape___Esca_(Black_Measles)\nSymptoms: Tiger-stripe leaf discoloration (yellow/red between veins) and dark sp..."
       },
       "strategy_b_direct_llm": {
-        "factually_consistent": false,
-        "chemical_dosage_hallucination": true,
-        "human_rating_score": 1.8
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null
       }
     },
     {
@@ -127,15 +127,15 @@
       "user_question": "What copper-based fungicide rate is verified for potato early blight?",
       "strategy_a_grounded_rag": {
         "kb_coverage_pct": 100.0,
-        "factually_consistent": true,
-        "chemical_dosage_hallucination": false,
-        "human_rating_score": 5.0,
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null,
         "response_snippet": "Diagnosis: Potato___Early_blight\nSymptoms: Concentric ring ('target board') brown spots on older lower leaves.\nChemical:..."
       },
       "strategy_b_direct_llm": {
-        "factually_consistent": false,
-        "chemical_dosage_hallucination": true,
-        "human_rating_score": 1.8
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null
       }
     },
     {
@@ -144,15 +144,15 @@
       "user_question": "What is the emergency management protocol for potato late blight?",
       "strategy_a_grounded_rag": {
         "kb_coverage_pct": 100.0,
-        "factually_consistent": true,
-        "chemical_dosage_hallucination": false,
-        "human_rating_score": 5.0,
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null,
         "response_snippet": "Diagnosis: Potato___Late_blight\nSymptoms: Water-soaked dark lesions on leaf tips/edges with white mold on underside in h..."
       },
       "strategy_b_direct_llm": {
-        "factually_consistent": true,
-        "chemical_dosage_hallucination": false,
-        "human_rating_score": 3.2
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null
       }
     },
     {
@@ -161,15 +161,15 @@
       "user_question": "How do I control bacterial spot on tomato leaves organically?",
       "strategy_a_grounded_rag": {
         "kb_coverage_pct": 100.0,
-        "factually_consistent": true,
-        "chemical_dosage_hallucination": false,
-        "human_rating_score": 5.0,
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null,
         "response_snippet": "Diagnosis: Tomato___Bacterial_spot\nSymptoms: Small brown water-soaked leaf spots with yellow halos; leaves drop prematur..."
       },
       "strategy_b_direct_llm": {
-        "factually_consistent": true,
-        "chemical_dosage_hallucination": false,
-        "human_rating_score": 3.2
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null
       }
     },
     {
@@ -178,15 +178,15 @@
       "user_question": "What crop rotation period is needed for tomato early blight?",
       "strategy_a_grounded_rag": {
         "kb_coverage_pct": 100.0,
-        "factually_consistent": true,
-        "chemical_dosage_hallucination": false,
-        "human_rating_score": 5.0,
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null,
         "response_snippet": "Diagnosis: Tomato___Early_blight\nSymptoms: Dark brown spots with characteristic concentric target rings on lower leaves ..."
       },
       "strategy_b_direct_llm": {
-        "factually_consistent": true,
-        "chemical_dosage_hallucination": false,
-        "human_rating_score": 3.2
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null
       }
     },
     {
@@ -195,15 +195,15 @@
       "user_question": "What chemical spray is recommended for tomato late blight?",
       "strategy_a_grounded_rag": {
         "kb_coverage_pct": 100.0,
-        "factually_consistent": true,
-        "chemical_dosage_hallucination": false,
-        "human_rating_score": 5.0,
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null,
         "response_snippet": "Diagnosis: Tomato___Late_blight\nSymptoms: Large pale green to dark water-soaked spots with white fungal fuzzy growth und..."
       },
       "strategy_b_direct_llm": {
-        "factually_consistent": false,
-        "chemical_dosage_hallucination": true,
-        "human_rating_score": 1.8
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null
       }
     },
     {
@@ -212,15 +212,15 @@
       "user_question": "What relative humidity control prevents tomato leaf mold in greenhouses?",
       "strategy_a_grounded_rag": {
         "kb_coverage_pct": 100.0,
-        "factually_consistent": true,
-        "chemical_dosage_hallucination": false,
-        "human_rating_score": 5.0,
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null,
         "response_snippet": "Diagnosis: Tomato___Leaf_Mold\nSymptoms: Pale green/yellow spots on upper leaf surface with velvety olive-green mold unde..."
       },
       "strategy_b_direct_llm": {
-        "factually_consistent": true,
-        "chemical_dosage_hallucination": false,
-        "human_rating_score": 3.2
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null
       }
     },
     {
@@ -229,15 +229,15 @@
       "user_question": "What fungicides are effective for septoria leaf spot on tomatoes?",
       "strategy_a_grounded_rag": {
         "kb_coverage_pct": 100.0,
-        "factually_consistent": true,
-        "chemical_dosage_hallucination": false,
-        "human_rating_score": 5.0,
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null,
         "response_snippet": "Diagnosis: Tomato___Septoria_leaf_spot\nSymptoms: Numerous small circular spots with dark margins and light gray centers ..."
       },
       "strategy_b_direct_llm": {
-        "factually_consistent": false,
-        "chemical_dosage_hallucination": true,
-        "human_rating_score": 1.8
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null
       }
     },
     {
@@ -246,15 +246,15 @@
       "user_question": "What miticide or neem oil concentration controls two-spotted spider mites?",
       "strategy_a_grounded_rag": {
         "kb_coverage_pct": 100.0,
-        "factually_consistent": true,
-        "chemical_dosage_hallucination": false,
-        "human_rating_score": 5.0,
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null,
         "response_snippet": "Diagnosis: Tomato___Spider_mites Two-spotted_spider_mite\nSymptoms: Yellow stippling/speckling on leaves with fine silken..."
       },
       "strategy_b_direct_llm": {
-        "factually_consistent": true,
-        "chemical_dosage_hallucination": false,
-        "human_rating_score": 3.2
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null
       }
     },
     {
@@ -263,15 +263,15 @@
       "user_question": "Can TYLCV virus be cured after infection, or is vector control mandatory?",
       "strategy_a_grounded_rag": {
         "kb_coverage_pct": 100.0,
-        "factually_consistent": true,
-        "chemical_dosage_hallucination": false,
-        "human_rating_score": 5.0,
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null,
         "response_snippet": "Diagnosis: Tomato___Tomato_Yellow_Leaf_Curl_Virus\nSymptoms: Severe leaf curling upward, yellowing leaf margins, stunted ..."
       },
       "strategy_b_direct_llm": {
-        "factually_consistent": true,
-        "chemical_dosage_hallucination": false,
-        "human_rating_score": 3.2
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null
       }
     },
     {
@@ -280,15 +280,15 @@
       "user_question": "How is tomato mosaic virus transmitted and disinfected?",
       "strategy_a_grounded_rag": {
         "kb_coverage_pct": 100.0,
-        "factually_consistent": true,
-        "chemical_dosage_hallucination": false,
-        "human_rating_score": 5.0,
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null,
         "response_snippet": "Diagnosis: Tomato___Tomato_mosaic_virus\nSymptoms: Mottled dark green/light green mosaic pattern on leaves; fern-like lea..."
       },
       "strategy_b_direct_llm": {
-        "factually_consistent": true,
-        "chemical_dosage_hallucination": false,
-        "human_rating_score": 3.2
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null
       }
     },
     {
@@ -297,15 +297,15 @@
       "user_question": "What bactericide protocol works for bell pepper bacterial spot?",
       "strategy_a_grounded_rag": {
         "kb_coverage_pct": 100.0,
-        "factually_consistent": true,
-        "chemical_dosage_hallucination": false,
-        "human_rating_score": 5.0,
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null,
         "response_snippet": "Diagnosis: Pepper,_bell___Bacterial_spot\nSymptoms: Small, dark, water-soaked leaf spots that turn brown and scab-like.\nC..."
       },
       "strategy_b_direct_llm": {
-        "factually_consistent": true,
-        "chemical_dosage_hallucination": false,
-        "human_rating_score": 3.2
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null
       }
     },
     {
@@ -314,15 +314,15 @@
       "user_question": "What spray schedule controls bacterial spot on peach trees?",
       "strategy_a_grounded_rag": {
         "kb_coverage_pct": 100.0,
-        "factually_consistent": true,
-        "chemical_dosage_hallucination": false,
-        "human_rating_score": 5.0,
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null,
         "response_snippet": "Diagnosis: Peach___Bacterial_spot\nSymptoms: Small dark water-soaked spots on leaves turning into shot-holes; pitted frui..."
       },
       "strategy_b_direct_llm": {
-        "factually_consistent": false,
-        "chemical_dosage_hallucination": true,
-        "human_rating_score": 1.8
+        "factually_consistent": null,
+        "chemical_dosage_hallucination": null,
+        "human_rating_score": null
       }
     }
   ]

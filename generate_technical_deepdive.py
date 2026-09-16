@@ -455,19 +455,19 @@ def build(out='AgriVision_Technical_DeepDive.pdf'):
     # CHAPTER 9: RAG ENGINE
     pdf.add_page()
     pdf.ctitle('Chapter 9','RAG Engine - Grounding AI in Verified Agricultural Facts',
-               'Retrieval-Augmented Generation | 0% hallucination vs 38.9% without RAG')
+               'Retrieval-Augmented Generation | Knowledge-Grounded Context vs Ungrounded Generation')
     pdf.sbox('The Problem: LLMs Hallucinate Dangerous Chemical Information',[
-        'Large Language Models like Mistral-7B or Qwen2.5 are brilliant writers but HALLUCINATE.',
-        'They generate facts that SOUND plausible but are completely wrong.',
+        'Large Language Models like Mistral-7B or Qwen2.5 are brilliant writers but CAN HALLUCINATE.',
+        'They generate facts that SOUND plausible but can be dangerously inaccurate.',
         '',
         'In agriculture, hallucinated chemical advice causes real harm:',
         '  Apply Mancozeb at 5g/L  --  ACTUAL correct dose is 2.5g/L. Double dose kills crop!',
         '  Use Chlorpyrifos for fungal infections  --  Chlorpyrifos is an INSECTICIDE not fungicide!',
         '  Inventing active ingredient names that do not exist in any real product.',
         '',
-        'Ablation study result (src/evaluation/human_rating_pass.py):',
-        '  Direct LLM WITHOUT RAG: 38.9% of responses had wrong chemical dosage information!',
-        '  This rate is completely unacceptable for a real agricultural advisory system.',
+        'Ablation study setup (src/evaluation/grounding_ablation.py):',
+        '  Direct LLM generation is prone to fabricating chemical active ingredients and dosages.',
+        '  Strategy A RAG grounding achieves 100.0% structured KB coverage; human pass is PENDING.',
     ],bg=RB,bd=RBd,tc=RT,h=58)
     pdf.abox('ANALOGY: Open-Book Exam vs Closed-Book Exam',
         'Ask a student to write an essay on Treatment for Tomato Late Blight from memory only. '
@@ -497,17 +497,16 @@ def build(out='AgriVision_Technical_DeepDive.pdf'):
         '  LLM (Qwen2.5-7B or Mistral-7B) generates ~200-word treatment plan.',
         '  Constrained to injected context - cannot hallucinate outside it.',
     ],h=82)
-    pdf.sbox('RAG vs Direct LLM - Ablation Study Results',[
-        '                       Direct LLM    RAG-Grounded LLM    Improvement',
+    pdf.sbox('RAG Knowledge Base Retrieval Coverage Study',[
+        'Benchmark Evaluation: 18 disease query pairs across rag_knowledge_base.json',
         '----------------------------------------------------------------------',
-        'Chemical Accuracy:     1.8 / 5.0     5.0 / 5.0           +177.8%',
-        'Organic Accuracy:      3.2 / 5.0     4.9 / 5.0           +53.1%',
-        'Prevention Quality:    3.0 / 5.0     4.8 / 5.0           +60.0%',
-        'Hallucination Rate:    38.9%         0.0%                 Fully eliminated (-100%)',
+        'Structured KB Fields Evaluated: symptoms, chemical_treatment, organic_remedy, prevention',
+        'Strategy A (Grounded RAG):     100.0% retrieval coverage (18/18 classes complete)',
+        'Strategy B (Direct LLM):       PENDING manual human evaluation pass',
         '',
-        'Method: 30 scenarios, 5 human expert raters, Likert 1-5 scale',
-        'CONCLUSION: RAG completely eliminates chemical hallucination. This is not optional.',
-    ],bg=SB,bd=BB,tc=BT,h=50)
+        'Script: src/evaluation/grounding_ablation.py | Results: results/week2/grounding_ablation_results.json',
+        'CONCLUSION: Context grounding guarantees certified agronomic guidelines accompany every diagnosis.',
+    ],bg=SB,bd=BB,tc=BT,h=45)
 
     # CHAPTER 10: FULL PIPELINE
     pdf.add_page()

@@ -130,7 +130,7 @@ def build_synopsis_pdf(output_filename="Project_Synopsis.pdf"):
         ("Model Backbones", "ResNet50 (94.87%) & EfficientNetV2-B0 (92.20%)"),
         ("Calibration & OOD", "ECE: 1.09% -> 0.42% (T=1.20), OOD Tau=0.60"),
         ("Explainable AI", "Grad-CAM & Grad-CAM++ (Multi-Lesion Focus)"),
-        ("RAG Engine", "Grounded KB (5.0/5.0 score vs 2.66/5.0 direct LLM)"),
+        ("RAG Engine", "Grounded KB (100% Retrieval Coverage across 18 classes)"),
         ("Frontend & Report", "Streamlit 1.51.0, FPDF2 PDF Report Engine")
     ]
     for category, spec in tech_specs:

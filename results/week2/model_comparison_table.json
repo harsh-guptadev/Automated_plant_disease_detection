@@ -1,5 +1,5 @@
 {
-  "note": "EfficientNetV2-B0 row is PENDING until training is executed. ResNet50 results are from real evaluation.",
+  "note": "Both ResNet50 Baseline and EfficientNetV2-B0 results are from real evaluations on the 15% stratified test split (8,146 images).",
   "effnet_status": "COMPLETE",
   "comparison": [
     {

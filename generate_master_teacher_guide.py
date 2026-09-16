@@ -505,14 +505,14 @@ def build_master_coursebook_pdf(output_filename="AgriVision_Master_Coursebook.pd
     pdf.set_xy(15, pdf.get_y() + 2)
     pdf.set_font("Helvetica", "B", 9.5)
     pdf.set_text_color(20, 83, 45)
-    pdf.cell(0, 5, sanitize_pdf_text("Human Grounding Ablation Study Results (src/evaluation/human_rating_pass.py):"), ln=True)
+    pdf.cell(0, 5, sanitize_pdf_text("Grounding Ablation & Knowledge Base Coverage (src/evaluation/grounding_ablation.py):"), ln=True)
     pdf.set_font("Helvetica", "", 8.5)
     pdf.set_text_color(30, 41, 59)
     abl_text = (
-        "We conducted a human evaluation pass across 18 benchmark queries comparing Grounded RAG vs Direct LLM (results/week2/grounding_ablation_results.json):\n\n"
-        "  * Strategy A (Grounded RAG): Mean Human Likert Score 5.00 / 5.0 | 100.0% Factual Consistency | 0.0% Chemical Dosage Hallucinations!\n"
-        "  * Strategy B (Direct LLM):   Mean Human Likert Score 2.66 / 5.0 | 61.1% Factual Consistency  | 38.9% Dangerous Chemical Dosage Hallucinations!\n"
-        "PROFIT / ADVANTAGE: Proves scientifically that RAG eliminates chemical hallucinations completely!"
+        "We evaluated knowledge base retrieval coverage across 18 benchmark queries for Grounded RAG (results/week2/grounding_ablation_results.json):\n\n"
+        "  * Strategy A (Grounded RAG): 100.0% Structured KB Retrieval Coverage across all 18 benchmark disease classes (symptoms, chemical treatments, organic remedies, prevention).\n"
+        "  * Strategy B (Direct LLM):   Human evaluation pass is PENDING manual execution by a team member.\n"
+        "ADVANTAGE: Proves structured RAG reliably grounds disease management advice in certified agronomic protocols!"
     )
     pdf.set_x(15)
     pdf.multi_cell(180, 3.8, sanitize_pdf_text(abl_text))
@@ -644,8 +644,8 @@ def build_master_coursebook_pdf(output_filename="AgriVision_Master_Coursebook.pd
         ["ECE Calibration Error", "1.09% -> 0.42% (61.61% reduction)", "results/week1/temperature_scale.json"],
         ["OOD In-Dist. Acceptance", "96.0% accept rate (tau = 0.60)", "results/week1/ood_rejection_results.json"],
         ["OOD Non-Leaf Rejection", "40.0% rejection rate (12/30 rejected)", "results/week1/ood_rejection_results.json"],
-        ["Grounding Ablation (RAG)", "5.0/5.0 score (0% hallucination)", "results/week2/grounding_ablation_results.json"],
-        ["Grounding Ablation (LLM)", "2.66/5.0 score (38.9% hallucination)", "results/week2/grounding_ablation_results.json"]
+        ["Grounding Ablation (RAG)", "100.0% KB retrieval coverage", "results/week2/grounding_ablation_results.json"],
+        ["Grounding Ablation (LLM)", "PENDING human evaluation", "results/week2/grounding_ablation_results.json"]
     ]
 
     pdf.set_text_color(30, 41, 59)
@@ -664,8 +664,8 @@ def build_master_coursebook_pdf(output_filename="AgriVision_Master_Coursebook.pd
     viva_pitches = (
         "1. Viva Defense Pitch: 'AgriVision AI is an uncertainty-aware decision support system. We combine ResNet50 (94.87% Acc) "
         "and EfficientNetV2-B0 (92.20% Acc, 2x speed) with Temperature Scaling calibration (61.61% ECE reduction) and Grad-CAM++.'\n"
-        "2. RAG Defense Pitch: 'Direct LLMs suffer from a 38.9% chemical dosage hallucination rate. Context-grounding via rag_knowledge_base.json "
-        "achieves 5.0/5.0 Likert score with 0% chemical dosage hallucinations.'\n"
+        "2. RAG Defense Pitch: 'Direct LLMs are vulnerable to chemical dosage hallucinations. Context-grounding via rag_knowledge_base.json "
+        "achieves 100.0% structured knowledge retrieval coverage across all benchmark disease classes.'\n"
         "3. OOD Safety Pitch: 'Rejection threshold tau=0.60 flags non-leaf or blurry images, preventing forced incorrect predictions.'"
     )
     pdf.multi_cell(186, 3.8, sanitize_pdf_text(viva_pitches))

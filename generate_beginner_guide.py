@@ -184,12 +184,12 @@ def build_beginner_guide_pdf(output_filename="AgriVision_Beginner_Guide.pdf"):
         ("Phase 6: Knowledge Base & Grounded RAG Engine",
          "Created a 38-class verified agronomist JSON knowledge base (rag_knowledge_base.json) containing certified symptoms, chemical active ingredients, organic remedies, and prevention strategies.\n"
          "  * RAG Engine (rag_engine.py): When a disease is diagnosed, retrieves exact factual context and injects it into LLMs (Qwen/Mistral).\n"
-         "  * Grounding Ablation: Human rating pass proved Grounded RAG achieves 5.0/5.0 Likert score (0% hallucination) vs 2.66/5.0 for direct LLMs."),
+         "  * Grounding Ablation: Strategy A achieved 100.0% structured knowledge base retrieval coverage across 18 benchmark classes; Strategy B human evaluation is PENDING."),
 
         ("Phase 7: Full Stack Web App & Verification Gate",
          "  * Web UI (App.py): Built Streamlit dashboard with custom CSS, dual model selector, dual XAI selector, and voice support.\n"
          "  * Report Engine (pdf_generator.py): Built printable diagnostic card generator using FPDF2.\n"
-         "  * Verification Gate (verify_claims.py): Automated script that audits all 85 numeric claims in paper against JSON results files.")
+         "  * Verification Gate (verify_claims.py): Automated gate auditing all numeric claims in paper against JSON results files with provenance integrity audits.")
     ]
 
     for title, desc in creation_phases:
@@ -252,8 +252,8 @@ def build_beginner_guide_pdf(output_filename="AgriVision_Beginner_Guide.pdf"):
         "1. Confidence Calibration: ECE reduced from 1.09% to 0.42% (61.61% relative error reduction).\n"
         "2. Out-of-Distribution Safety: 96.0% accept on real leaves, 40.0% rejection on non-leaf images at tau=0.60.\n"
         "3. Robustness Test: Brightness/JPEG robust (<14% drop); Gaussian blur reduces accuracy up to 70 pp.\n"
-        "4. Grounding Ablation: Grounded RAG achieved 5.0/5.0 human Likert score (0% chemical dosage hallucination)\n"
-        "   versus 2.66/5.0 score for ungrounded LLMs (38.9% dangerous chemical dosage hallucinations)."
+        "4. Grounding Ablation: Grounded RAG achieved 100.0% structured KB retrieval coverage across 18 benchmark classes\n"
+        "   (Strategy B direct LLM human evaluation pass is PENDING manual execution)."
     )
     pdf.set_x(15)
     pdf.multi_cell(180, 4.2, sanitize_pdf_text(exp_summary))

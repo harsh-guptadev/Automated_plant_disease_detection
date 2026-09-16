@@ -33,6 +33,175 @@ def load_all_results_data(results_dir="results"):
             
     return results_map
 
+
+def check_mechanical_cycle(sequence, min_len=6):
+    """
+    Checks if a sequence of numeric values repeats in a mechanical periodic cycle.
+    Returns (is_cyclical, period, pattern) if a cycle of length k <= len(sequence)//2 exists.
+    """
+    if len(sequence) < min_len:
+        return False, None, None
+    n = len(sequence)
+    for k in range(1, (n // 2) + 1):
+        if all(sequence[i] == sequence[i % k] for i in range(n)):
+            return True, k, sequence[:k]
+    return False, None, None
+
+
+def check_results_provenance(results_dir="results"):
+    """
+    Performs strict provenance audits across all results files.
+    FAILS if:
+      1. A results file reports human ratings while raw_response fields are empty or absent.
+      2. A results file claims an experiment COMPLETE with no corresponding saved model weights,
+         probability arrays (.npz), or raw outputs on disk.
+      3. Rating/score values repeat in a mechanical cycle across items.
+    """
+    failures = []
+    passes = []
+    
+    json_files = glob.glob(os.path.join(results_dir, "**", "*.json"), recursive=True)
+    
+    for jf in json_files:
+        rel_path = os.path.relpath(jf, start=results_dir).replace("\\", "/")
+        file_dir = os.path.dirname(jf)
+        try:
+            with open(jf, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception as e:
+            failures.append(f"[JSON ERROR] {rel_path}: Failed to parse JSON: {e}")
+            continue
+
+        # -------------------------------------------------------------
+        # Check 1: Human ratings provenance (raw_response requirement)
+        # -------------------------------------------------------------
+        per_items = data.get("per_item_results", [])
+        human_ratings_reported = False
+        
+        # Check summary metrics for reported human ratings
+        summary = data.get("summary_metrics", {})
+        for strat_key, strat_val in summary.items():
+            if isinstance(strat_val, dict):
+                if strat_val.get("mean_human_score") is not None:
+                    human_ratings_reported = True
+        if data.get("mean_human_score") is not None:
+            human_ratings_reported = True
+
+        # Check per_item_results
+        rated_items_count = 0
+        missing_raw_response_count = 0
+        for item in per_items:
+            for k, v in item.items():
+                if isinstance(v, dict) and v.get("human_rating_score") is not None:
+                    human_ratings_reported = True
+                    rated_items_count += 1
+                    raw_resp = v.get("raw_response") or v.get("raw_output") or item.get("raw_response")
+                    if not raw_resp or str(raw_resp).strip() == "":
+                        missing_raw_response_count += 1
+
+        if human_ratings_reported and missing_raw_response_count > 0:
+            failures.append(
+                f"[PROVENANCE FAIL] {rel_path}: Reports human ratings ({rated_items_count} rated items), "
+                f"but 'raw_response' field is empty or absent on {missing_raw_response_count} item(s)."
+            )
+        elif human_ratings_reported and rated_items_count == 0:
+            failures.append(
+                f"[PROVENANCE FAIL] {rel_path}: Summary claims human ratings, but no per-item rated entries exist."
+            )
+        elif not human_ratings_reported:
+            passes.append(f"[PROVENANCE PASS] {rel_path}: No unearned human ratings reported.")
+
+        # -------------------------------------------------------------
+        # Check 2: Experiment COMPLETE status backed by saved artifacts
+        # -------------------------------------------------------------
+        def find_status_claims(obj, prefix=""):
+            claims = []
+            if isinstance(obj, dict):
+                for k, v in obj.items():
+                    curr_k = f"{prefix}.{k}" if prefix else k
+                    if isinstance(v, str) and v.strip().upper() == "COMPLETE":
+                        claims.append((curr_k, v))
+                    elif isinstance(v, (dict, list)):
+                        claims.extend(find_status_claims(v, curr_k))
+            elif isinstance(obj, list):
+                for i, elem in enumerate(obj):
+                    claims.extend(find_status_claims(elem, f"{prefix}[{i}]"))
+            return claims
+
+        status_claims = find_status_claims(data)
+        for key_name, val in status_claims:
+            # Determine expected artifacts
+            key_lower = key_name.lower()
+            if "effnet" in key_lower or "efficientnet" in key_lower:
+                weights_exist = any(
+                    glob.glob(os.path.join(results_dir, "**", "*efficientnet*weight*"), recursive=True) +
+                    glob.glob(os.path.join(results_dir, "**", "*efficientnet*.h5"), recursive=True) +
+                    glob.glob(os.path.join(results_dir, "**", "*efficientnet*.keras"), recursive=True)
+                )
+                probs_exist = any(
+                    glob.glob(os.path.join(results_dir, "**", "*efficientnet*prob*.npz"), recursive=True)
+                )
+                metrics_exist = any(
+                    glob.glob(os.path.join(results_dir, "**", "*efficientnet*metric*.json"), recursive=True)
+                )
+                if not (weights_exist and (probs_exist or metrics_exist)):
+                    failures.append(
+                        f"[PROVENANCE FAIL] {rel_path}: Claims '{key_name}: COMPLETE' but required model "
+                        f"weights or probability arrays were not found on disk."
+                    )
+                else:
+                    passes.append(f"[PROVENANCE PASS] {rel_path}: '{key_name}: COMPLETE' backed by saved weights and probs.")
+            elif "resnet" in key_lower:
+                probs_exist = any(
+                    glob.glob(os.path.join(results_dir, "**", "*resnet*prob*.npz"), recursive=True)
+                )
+                if not probs_exist:
+                    failures.append(
+                        f"[PROVENANCE FAIL] {rel_path}: Claims '{key_name}: COMPLETE' but ResNet50 test probs (.npz) missing."
+                    )
+                else:
+                    passes.append(f"[PROVENANCE PASS] {rel_path}: '{key_name}: COMPLETE' backed by saved probability array.")
+            else:
+                # Generic COMPLETE claim: verify at least one model/prob/artifact exists in same folder or results
+                sibling_artifacts = [
+                    f for f in os.listdir(file_dir)
+                    if f.endswith((".npz", ".h5", ".weights.h5", ".keras", ".png", ".csv"))
+                ]
+                if not sibling_artifacts:
+                    failures.append(
+                        f"[PROVENANCE FAIL] {rel_path}: Claims '{key_name}: COMPLETE' but directory {file_dir} "
+                        f"has no supporting weights, probability arrays (.npz), or evaluation artifacts."
+                    )
+                else:
+                    passes.append(f"[PROVENANCE PASS] {rel_path}: '{key_name}: COMPLETE' verified with local artifacts.")
+
+        # -------------------------------------------------------------
+        # Check 3: Mechanical cycle detection in rating/score series
+        # -------------------------------------------------------------
+        if per_items:
+            # Collect score series across items
+            score_series_map = {}
+            for item in per_items:
+                for strat_name, strat_data in item.items():
+                    if isinstance(strat_data, dict):
+                        for field_name, field_val in strat_data.items():
+                            if "score" in field_name.lower() or "rating" in field_name.lower():
+                                if isinstance(field_val, (int, float)):
+                                    series_key = f"{strat_name}.{field_name}"
+                                    score_series_map.setdefault(series_key, []).append(field_val)
+
+            for series_name, seq in score_series_map.items():
+                is_cyclical, period, pattern = check_mechanical_cycle(seq, min_len=6)
+                if is_cyclical:
+                    failures.append(
+                        f"[PROVENANCE FAIL] {rel_path}: Values in '{series_name}' repeat in a mechanical cycle "
+                        f"(period={period}: {pattern}) across {len(seq)} items. Flagged as fabricated/unearned."
+                    )
+                else:
+                    passes.append(f"[PROVENANCE PASS] {rel_path}: '{series_name}' has organic non-cyclical distribution.")
+
+    return len(failures) == 0, failures, passes
+
 def extract_numeric_tokens(text):
     """
     Extracts numerical statements (percentages, ratios, decimal numbers) from markdown text.
@@ -117,6 +286,20 @@ def run_verification_gate(doc_path="IEEE_Paper_Draft.md", results_dir="results")
     print(f"Results Directory:    {results_dir}")
     print(f"====================================================================")
 
+    # 1. PROVENANCE INTEGRITY AUDIT
+    print("\n--- STAGE 1: PROVENANCE & EARNED-DATA AUDIT ---")
+    prov_ok, prov_failures, prov_passes = check_results_provenance(results_dir)
+    for p in prov_passes:
+        print(f"  [OK] {p}")
+    if prov_failures:
+        print("\n  [PROVENANCE FAILURES DETECTED]:")
+        for f in prov_failures:
+            print(f"  {f}")
+    else:
+        print("\n  [PROVENANCE SUCCESS] All results files exhibit valid provenance and earned artifacts.")
+
+    # 2. NUMERIC CLAIMS CROSS-REFERENCE AUDIT
+    print("\n--- STAGE 2: NUMERIC CLAIMS CROSS-REFERENCE AUDIT ---")
     if not os.path.exists(doc_path):
         print(f"[Error] Manuscript file {doc_path} not found!")
         sys.exit(1)
@@ -160,24 +343,35 @@ def run_verification_gate(doc_path="IEEE_Paper_Draft.md", results_dir="results")
             unverified_count += 1
             audit_logs.append(f"Line {c['line_num']:<3} | [UNVERIFIED]: '{c['raw_token']}' in '{line_txt}'")
 
-    print("\n--- DETAILED AUDIT LOG ---")
+    print("\n--- DETAILED NUMERIC AUDIT LOG ---")
     for log in audit_logs:
         print(log)
 
     print("\n================ VERIFICATION GATE SUMMARY ================")
+    print(f"Stage 1 Provenance Status:     {'PASSED (0 failures)' if prov_ok else f'FAILED ({len(prov_failures)} failures)'}")
     print(f"Total Numeric Claims Analyzed: {len(claims)}")
-    print(f"CONFIRMED Claims:           {confirmed_count}")
-    print(f"PENDING/PLANNED Statements: {pending_count}")
-    print(f"UNVERIFIED Claims:          {unverified_count}")
+    print(f"CONFIRMED Claims:              {confirmed_count}")
+    print(f"PENDING/PLANNED Statements:    {pending_count}")
+    print(f"UNVERIFIED Claims:             {unverified_count}")
     print(f"===========================================================")
 
+    gate_passed = True
+    if not prov_ok:
+        print(f"\n[FAIL] Verification Gate Blocked on Provenance Integrity! Found {len(prov_failures)} provenance failure(s):")
+        for f in prov_failures:
+            print(f"  - {f}")
+        gate_passed = False
+
     if unverified_count > 0:
-        print(f"\n[FAIL] Verification Gate Blocked! {unverified_count} UNVERIFIED numeric claims found.")
+        print(f"\n[FAIL] Verification Gate Blocked on Numerical Mismatch! {unverified_count} UNVERIFIED numeric claims found.")
         print("You must fix the document by removing unverified claims or citing exact results files.")
-        return False
-    else:
-        print("\n[SUCCESS] Verification Gate Passed! 100% of numeric claims trace to saved results files.")
+        gate_passed = False
+
+    if gate_passed:
+        print("\n[SUCCESS] Verification Gate Passed! 100% of numeric claims trace to saved results files and all provenance checks pass.")
         return True
+    else:
+        return False
 
 if __name__ == "__main__":
     success = run_verification_gate()

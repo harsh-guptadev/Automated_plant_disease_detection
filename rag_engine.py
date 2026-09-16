@@ -23,7 +23,7 @@ def retrieve_disease_context(predicted_class: str) -> dict:
     return kb.get(predicted_class, default_info)
 
 def generate_rag_care_advice(predicted_disease_readable: str, predicted_class: str, hf_token: str, language: str = "English", is_uncertain: bool = False, confidence_pct: float = 100.0) -> str:
-    """Uses retrieved RAG context + Hugging Face LLM to generate zero-hallucination care steps."""
+    """Uses retrieved RAG context + Hugging Face LLM to generate knowledge-grounded care steps."""
     context = retrieve_disease_context(predicted_class)
     
     uncertainty_note = ""

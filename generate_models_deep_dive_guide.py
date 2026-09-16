@@ -256,9 +256,9 @@ def build_models_guide_pdf(output_filename="AgriVision_Deep_Dive_Models_Guide.pd
         "* How It Works in AgriVision AI:\n"
         "  - Built a 38-class certified Agronomy Database (rag_knowledge_base.json) containing symptoms, chemical active ingredients, organic remedies, and prevention.\n"
         "  - When a disease is diagnosed, retrieve_disease_context() fetches exact reference data and injects it into LLMs (Qwen2.5 / Mistral-7B).\n"
-        "* PROFIT / ADVANTAGE:\n"
-        "  - Grounded RAG achieved 5.00/5.0 Likert score with 0.0% chemical dosage hallucinations!\n"
-        "  - Direct LLMs exhibited a 38.9% chemical dosage hallucination rate (src/evaluation/human_rating_pass.py)."
+        "* ADVANTAGE:\n"
+        "  - Grounded RAG achieved 100.0% structured KB retrieval coverage across all 18 benchmark classes!\n"
+        "  - Direct LLMs without grounding risk fabricating active ingredient dosages (Strategy B human pass is PENDING)."
     )
     pdf.set_x(15)
     pdf.multi_cell(180, 3.8, sanitize_pdf_text(rag_text))
